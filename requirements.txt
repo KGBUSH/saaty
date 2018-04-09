@@ -21,6 +21,7 @@ Jinja2==2.10
 kafka-python==1.4.2
 kazoo==2.4.0
 MarkupSafe==1.0
+MySQL-python==1.2.5
 numpy==1.14.2
 pathlib2==2.3.0
 pexpect==4.4.0

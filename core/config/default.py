@@ -24,9 +24,14 @@ CFG_USE_LOCAL = False
 
 PROFILE = False
 
-# SQLALCHEMY_TRACK_MODIFICATIONS = True
+SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-# SQLALCHEMY_DATABASE_URI = 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/dada'
+# SQLALCHEMY_DATABASE_URI = 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/saaty_db'
+
+SQLALCHEMY_BINDS = {
+    'saaty': 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/saaty_db',
+    'saaty_slave': 'mysql://dev_readonly:6nvjq0_H@192.168.1.250:3307/saaty_db',
+}
 
 SENTRY_DSN = ''
 

@@ -9,6 +9,7 @@ from requests_futures.sessions import FuturesSession
 from werkzeug.contrib.profiler import ProfilerMiddleware
 from kazoo.client import KazooClient
 from raven.contrib.flask import Sentry
+from common.db.router import AutoRouteSQLAlchemy
 from common.mq.kafka_logger import BizkafkaLogger
 from common.mq.kafka_logger import FreeKafkaLogger
 from common.config.cfgservice import Cfgservice
@@ -41,6 +42,10 @@ config_service = Cfgservice(
 )
 if app.config['CFG_SERVICE']:
     config_service.init()
+
+
+# database
+db = AutoRouteSQLAlchemy(app)
 
 
 # http client
