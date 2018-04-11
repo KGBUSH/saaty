@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
+import datetime
 from flask import request
 from common.framework.views import JsonView
 from core import app
 from core import kafkaBizLogger
 from saaty.constants import kafka_event
 from saaty.services.abtest import  get_order_ab_test_flag
+from saaty.services.poi_time_latency import get_poi_latency_score
 
 
 __all__ = [
@@ -17,7 +19,7 @@ class POILatencyRatioView(JsonView):
     This is poi rank view.
     """
     error_messages = {
-        'args_error': u'参数错误',
+        'args_error': u'input args error!',
     }
 
     methods = ['GET', ]
@@ -28,6 +30,7 @@ class POILatencyRatioView(JsonView):
 
         try:
             order_id = int(request.args['orderId'])
+            original_latency = int(request.args['original_latency'])
             supplier_id = int(request.args['supplierId'])
             supplier_lng = float(request.args['supplierLng'])
             supplier_lat = float(request.args['supplierLat'])
@@ -42,10 +45,12 @@ class POILatencyRatioView(JsonView):
         ab_test_flag = get_order_ab_test_flag(order_id, city_id)
 
         # 获取延迟时效
-        dynamic_latency_ratio = 0.2
+        dynamic_latency_ratio = get_poi_latency_score(city_id, supplier_id, \
+                                                      supplier_lng, supplier_lat, receiver_lng, receiver_lat)
 
         info = {
             "order_id": order_id,
+            "original_latency": original_latency,
             "supplier_id": supplier_id,
             "supplier_lng": supplier_lng,
             "supplier_lat": supplier_lat,
@@ -53,7 +58,8 @@ class POILatencyRatioView(JsonView):
             "receiver_lng": receiver_lng,
             "receiver_lat": receiver_lat,
             "dynamic_latency_ratio": dynamic_latency_ratio,
-            "ab_test_flag": ab_test_flag
+            "ab_test_flag": ab_test_flag,
+            "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
 
         kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
