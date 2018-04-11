@@ -34,6 +34,9 @@ def get_poi_latency_score(city_id, supplier_id, supplier_lng, supplier_lat, rece
     if latency_param:
         latency_score = latency_param["alpha_1"]*supplier_time_difficulty + latency_param["alpha_2"]*receiver_time_difficulty
 
-    return latency_score
+    return latency_score, supplier_time_difficulty, receiver_time_difficulty
 
+
+def get_poi_latency_ratio(latency_score):
+    pass
 

@@ -23,7 +23,7 @@ def get_order_ab_test_flag(order_id, city_id):
     )
 
     if abtest_flag == 0:
-        abtest_flag = 'wrong_config'
+        abtest_flag = 'None'
 
     return abtest_flag
 
