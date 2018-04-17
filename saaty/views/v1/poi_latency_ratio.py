@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import time
 from flask import request
 from common.framework.views import JsonView
 from core import app
@@ -27,6 +28,8 @@ class POILatencyRatioView(JsonView):
     decorators = []
 
     def get_context_data(self, **kwargs):
+
+        start_time = time.time()
 
         try:
             order_id = int(request.args['orderId'])
@@ -78,6 +81,8 @@ class POILatencyRatioView(JsonView):
         else:
             pass
 
+        end_time = time.time()
+
         info = {
             "is_service_open":is_service_open,
             "order_id": order_id,
@@ -94,7 +99,8 @@ class POILatencyRatioView(JsonView):
             "supplier_time_difficulty": supplier_time_difficulty,
             "receiver_time_difficulty": receiver_time_difficulty,
             "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            "change_latency_success": change_latency_success
+            "change_latency_success": change_latency_success,
+            "time_used": round(end_time-start_time, 3)
         }
 
         kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
