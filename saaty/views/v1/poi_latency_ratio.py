@@ -32,11 +32,11 @@ class POILatencyRatioView(JsonView):
             order_id = int(request.args['orderId'])
             original_latency = int(request.args['originalLatency'])
             supplier_id = int(request.args['supplierId'])
-            supplier_lng = float(request.args['supplierLng'])
-            supplier_lat = float(request.args['supplierLat'])
+            supplier_lng = str(request.args['supplierLng'])
+            supplier_lat = str(request.args['supplierLat'])
             city_id = int(request.args['cityId'])
-            receiver_lng = float(request.args['receiverLng'])
-            receiver_lat = float(request.args['receiverLat'])
+            receiver_lng = str(request.args['receiverLng'])
+            receiver_lat = str(request.args['receiverLat'])
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
             return {}
