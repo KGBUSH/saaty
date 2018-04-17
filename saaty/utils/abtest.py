@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2018 xuekun.zhuang <zhuangxuekun@imdada.cn>
-# -*- coding: utf-8 -*-
 from core import app
 
 
@@ -13,7 +12,8 @@ __all__ = [
 
 
 def get_order_ab_test_flag(order_id, city_id):
-    poi_city_param = app.config.get('CITY_POI_PARAM', {})  # 所有城市的ab分组流量配置
+    # 所有城市的ab分组流量配置
+    poi_city_param = app.config.get('POI_LATENCY_CITY_PARAM', {})
     city_param = poi_city_param.get(city_id, {})
 
     abtest_flag = get_abtest_id(
