@@ -62,6 +62,7 @@ def get_poi_latency_ratio(order_id, city_id, latency_score):
 
 def get_poi_latency_delta(order_id, city_id, original_latency, latency_score):
     ab_test_flag = 100
+    dynamic_latency_ratio = 0.0
     dynamic_latency_delta = 0.0
     change_latency_success = 0.0
 
@@ -77,11 +78,9 @@ def get_poi_latency_delta(order_id, city_id, original_latency, latency_score):
             change_latency_success = 1
 
     min_latency_delta = 0
-    max_latency_delta = 2400  # 延时上限10min
+    max_latency_delta = app.config.get("POI_LATENCY_MAX_LATENCY_DELTA", 1800)  # 延时上限30min
     dynamic_latency_delta = round((original_latency * dynamic_latency_ratio) / 300) * 300
-    print 'original_latency', original_latency
-    print 'dynamic_latency_ratio', dynamic_latency_ratio
-    print 'dynamic_latency_delta', dynamic_latency_delta
+
     if dynamic_latency_delta <= min_latency_delta:
         dynamic_latency_delta = min_latency_delta
     elif dynamic_latency_delta >= max_latency_delta:
