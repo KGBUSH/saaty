@@ -75,11 +75,11 @@ class POILatencyRatioView(JsonView):
                     latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})
                     if latency_schema_group:
                         param_group = latency_schema_group[ab_test_flag]
-
                         if latency_score >= param_group.get("threshold", 0):
                             dynamic_latency_ratio = param_group["schema"][int(10 * latency_score)]
                             is_latency_changed = 1
 
+                    # 将比例转化为固定的时间延迟
                     dynamic_latency_delta = get_poi_latency_delta(original_latency, dynamic_latency_ratio)
             except:
                 sentry.captureException()
