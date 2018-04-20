@@ -47,7 +47,7 @@ class POILatencyRatioView(JsonView):
 
         dynamic_latency_ratio = 0.0
         dynamic_latency_delta = 0.0
-        change_latency_success = 0
+        is_latency_changed = 0
         ab_test_flag = 100
         latency_score = 0.0
         supplier_time_difficulty = 0.0
@@ -105,7 +105,7 @@ class POILatencyRatioView(JsonView):
             "supplier_time_difficulty": supplier_time_difficulty,
             "receiver_time_difficulty": receiver_time_difficulty,
             "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            "change_latency_success": change_latency_success,
+            "is_latency_changed": is_latency_changed,
             "time_used": round(end_time-start_time, 3)
         }
 
