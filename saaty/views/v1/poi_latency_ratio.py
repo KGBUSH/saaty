@@ -9,6 +9,8 @@ from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.services.poi_time_latency import get_poi_latency_score
+from saaty.services.poi_time_latency import get_poi_latency_ratio
+from saaty.services.poi_time_latency import get_poi_latency_delta
 
 __all__ = [
     'POILatencyRatioView',
@@ -45,6 +47,7 @@ class POILatencyRatioView(JsonView):
             return {}
 
         dynamic_latency_ratio = 0.0
+        dynamic_latency_delta = 0.0
         change_latency_success = 0
         ab_test_flag = 100
         latency_score = 0.0
@@ -58,8 +61,6 @@ class POILatencyRatioView(JsonView):
                 # 获取城市激活列表
                 enable_city_list = app.config.get("POI_LATENCY_CITY_ENABLE_LIST", [])
                 if city_id in enable_city_list:
-                    # 获取AB测试分组
-                    ab_test_flag = get_order_ab_test_flag(order_id, city_id)
 
                     # 获取延迟时效
                     latency_score, supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_score(city_id,
@@ -69,13 +70,11 @@ class POILatencyRatioView(JsonView):
                                                                                                               receiver_lng,
                                                                                                               receiver_lat)
 
-                    # 获取策略分组
-                    latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})
-                    if latency_schema_group:
-                        param_group = latency_schema_group[ab_test_flag]
-                        if latency_score >= param_group.get("threshold", 0):
-                            dynamic_latency_ratio = param_group["schema"][int(10 * latency_score)]
-                            change_latency_success = 1
+                    # ab_test_flag, dynamic_latency_ratio, change_latency_success = \
+                    #     get_poi_latency_ratio(order_id, city_id, latency_score)
+
+                    ab_test_flag, dynamic_latency_ratio, dynamic_latency_delta, change_latency_success = \
+                        get_poi_latency_delta(order_id, city_id, original_latency, latency_score)
             except:
                 sentry.captureException()
         else:
@@ -84,7 +83,7 @@ class POILatencyRatioView(JsonView):
         end_time = time.time()
 
         info = {
-            "is_service_open":is_service_open,
+            "is_service_open": is_service_open,
             "order_id": order_id,
             "original_latency": original_latency,
             "supplier_id": supplier_id,
@@ -94,6 +93,7 @@ class POILatencyRatioView(JsonView):
             "receiver_lng": receiver_lng,
             "receiver_lat": receiver_lat,
             "dynamic_latency_ratio": dynamic_latency_ratio,
+            "dynamic_latency_delta": dynamic_latency_delta,
             "ab_test_flag": ab_test_flag,
             "latency_score": latency_score,
             "supplier_time_difficulty": supplier_time_difficulty,
@@ -107,6 +107,7 @@ class POILatencyRatioView(JsonView):
 
         context = {
             'LatencyRatio': dynamic_latency_ratio,
+            'LatencyDelta': dynamic_latency_delta,
         }
 
         return context
