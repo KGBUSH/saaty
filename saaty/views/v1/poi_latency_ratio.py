@@ -9,6 +9,7 @@ from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.services.poi_time_latency import get_poi_latency_score
+from saaty.services.poi_time_latency import get_poi_latency_delta
 
 __all__ = [
     'POILatencyRatioView',
@@ -45,7 +46,8 @@ class POILatencyRatioView(JsonView):
             return {}
 
         dynamic_latency_ratio = 0.0
-        change_latency_success = 0
+        dynamic_latency_delta = 0.0
+        is_latency_changed = 0
         ab_test_flag = 100
         latency_score = 0.0
         supplier_time_difficulty = 0.0
@@ -75,7 +77,10 @@ class POILatencyRatioView(JsonView):
                         param_group = latency_schema_group[ab_test_flag]
                         if latency_score >= param_group.get("threshold", 0):
                             dynamic_latency_ratio = param_group["schema"][int(10 * latency_score)]
-                            change_latency_success = 1
+                            is_latency_changed = 1
+
+                    # 将比例转化为固定的时间延迟
+                    dynamic_latency_delta = get_poi_latency_delta(original_latency, dynamic_latency_ratio)
             except:
                 sentry.captureException()
         else:
@@ -84,7 +89,7 @@ class POILatencyRatioView(JsonView):
         end_time = time.time()
 
         info = {
-            "is_service_open":is_service_open,
+            "is_service_open": is_service_open,
             "order_id": order_id,
             "original_latency": original_latency,
             "supplier_id": supplier_id,
@@ -94,12 +99,13 @@ class POILatencyRatioView(JsonView):
             "receiver_lng": receiver_lng,
             "receiver_lat": receiver_lat,
             "dynamic_latency_ratio": dynamic_latency_ratio,
+            "dynamic_latency_delta": dynamic_latency_delta,
             "ab_test_flag": ab_test_flag,
             "latency_score": latency_score,
             "supplier_time_difficulty": supplier_time_difficulty,
             "receiver_time_difficulty": receiver_time_difficulty,
             "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            "change_latency_success": change_latency_success,
+            "is_latency_changed": is_latency_changed,
             "time_used": round(end_time-start_time, 3)
         }
 
@@ -107,6 +113,7 @@ class POILatencyRatioView(JsonView):
 
         context = {
             'LatencyRatio': dynamic_latency_ratio,
+            'LatencyDelta': dynamic_latency_delta,
         }
 
         return context

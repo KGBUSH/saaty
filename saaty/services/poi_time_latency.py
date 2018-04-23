@@ -35,7 +35,21 @@ def get_poi_latency_score(city_id, supplier_id, supplier_lng, supplier_lat, rece
     # 计算难度系数
     latency_param = app.config.get("POI_LATENCY_PARAM", {})
     if latency_param:
-        latency_score = latency_param["alpha_1"]*supplier_time_difficulty + latency_param["alpha_2"]*receiver_time_difficulty
+        latency_score = latency_param["alpha_1"] * supplier_time_difficulty + latency_param[
+            "alpha_2"] * receiver_time_difficulty
 
     return latency_score, supplier_time_difficulty, receiver_time_difficulty
 
+
+def get_poi_latency_delta(original_latency, dynamic_latency_ratio):
+    min_latency_delta = 0
+    # 延时上限=40min
+    max_latency_delta = app.config.get("POI_LATENCY_MAX_LATENCY_DELTA", 2400)
+    dynamic_latency_delta = round((original_latency * dynamic_latency_ratio) / 300) * 300
+
+    if dynamic_latency_delta <= min_latency_delta:
+        dynamic_latency_delta = min_latency_delta
+    elif dynamic_latency_delta >= max_latency_delta:
+        dynamic_latency_delta = max_latency_delta
+
+    return dynamic_latency_delta
