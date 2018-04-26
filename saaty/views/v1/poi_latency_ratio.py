@@ -128,7 +128,7 @@ class POILatencyRatioView(JsonView):
 
         if control_flag == 1:
             dynamic_latency_ratio = 0.0
-            dynamic_latency_delta = 0.0
+            dynamic_latency_delta = 0
 
         context = {
             'LatencyRatio': dynamic_latency_ratio,
