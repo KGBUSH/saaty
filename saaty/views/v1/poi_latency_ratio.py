@@ -52,8 +52,8 @@ class POILatencyRatioView(JsonView):
         is_latency_changed = 0
         ab_test_flag = 'con_101'
         control_flag = 1
-        param_group = 101
-        latency_config_group = {
+        latency_config_group = 101
+        param_group = {
             'schema': [0, 0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4],
             'threshold': 0.7
         }
@@ -67,6 +67,7 @@ class POILatencyRatioView(JsonView):
             try:
                 # 获取城市激活列表
                 enable_city_list = app.config.get("POI_LATENCY_CITY_ENABLE_LIST", [])
+
                 if city_id in enable_city_list:
                     # 获取延迟时效
                     latency_score, supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_score(city_id,
