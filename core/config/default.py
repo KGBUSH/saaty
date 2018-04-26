@@ -2,7 +2,6 @@
 
 import os
 
-
 PROJECT_PATH = os.path.abspath(
     os.path.join(
         os.path.abspath(os.path.dirname(__file__)),
@@ -26,8 +25,6 @@ PROFILE = False
 
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-# SQLALCHEMY_DATABASE_URI = 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/saaty_db'
-
 SQLALCHEMY_BINDS = {
     'saaty': 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/saaty_db',
     'saaty_slave': 'mysql://dev_readonly:6nvjq0_H@192.168.1.250:3307/saaty_db',
@@ -41,3 +38,11 @@ KAFKA_HOSTS_LIST = '192.168.1.250:9092'
 TOPIC_DADA_BIZ_LOG = 'topic_dada_biz_log'
 KAFKA_CLIENT_TYPE = 'kpy'
 KAFKA_LOGGING_SWITCH = False
+
+# Redis & Cache
+REDIS_HOST = '192.168.1.250'
+REDIS_PORT = 6379
+REDIS_SOCKET_TIMEOUT = 0.1
+REDIS_DATABASE_INDEX = 0
+
+CACHE_KEY_PREFIX = 'saaty:'

@@ -5,9 +5,9 @@ from common.framework.views import JsonFormView
 from core import sentry
 from core import kafkaBizLogger
 from saaty.constants import kafka_event
+from saaty.forms.poi_time_value_form import ReceiverTimeForm
 from saaty.services.poi_time_value_service import \
     get_receiver_time_overhead_value_list
-from saaty.forms.poi_time_value_form import ReceiverTimeForm
 
 __all__ = [
     'ReceiverTimeOverHeadView',
@@ -50,4 +50,12 @@ class ReceiverTimeOverHeadView(JsonFormView):
         }
         kafkaBizLogger.info(kafka_event.DYNAMIC_PICKUP_TIME_EVENT, info)
 
-        return self.render_to_response(res_receiver_time_list)
+        context = {'receiverTimeList': [
+            {'receiverLng': res_info['receiverLng'],
+             'receiverLat': res_info['receiverLat'],
+             'cityId': res_info['cityId'],
+             'receiverTimeValue': res_info['receiverTimeValue'],
+             'receiverTimeRank': res_info['receiverTimeRank']}
+            for res_info in res_receiver_time_list]}
+
+        return self.render_to_response(context)
