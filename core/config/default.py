@@ -12,6 +12,13 @@ APP_NAME = __APP_NAME__ = 'saaty'
 
 DEBUG = False
 
+#单次查询取货时间，sql最大条目
+PICKUP_TIME_SQL_MAX_ONCE = 50
+
+#单次查询送达时间，sql最大条目
+RECEIVER_TIME_SQL_MAX_ONCE = 50
+
+
 ROOT_URLCONF = 'saaty.urls'
 
 WTF_CSRF_ENABLED = False

@@ -2,6 +2,7 @@
 import datetime
 import time
 from common.framework.views import JsonFormView
+from core import app
 from core import sentry
 from core import kafkaBizLogger
 from saaty.constants import kafka_event
@@ -19,7 +20,9 @@ class ReceiverTimeOverHeadView(JsonFormView):
     获取该地址送达时间开销
     """
     error_messages = {
-        'args_error_overflow': u'最多支持20组查询',
+        'args_error_overflow':
+            u'最多支持%s组查询' %
+            str(app.config.get('RECEIVER_TIME_SQL_MAX_ONCE', 20)),
     }
 
     methods = ['POST', ]
@@ -30,7 +33,8 @@ class ReceiverTimeOverHeadView(JsonFormView):
         start_time = time.time()
         receiver_info_list = form.data['receiverInfoList']
 
-        if len(receiver_info_list) > 20:
+        if len(receiver_info_list) > \
+                app.config.get('RECEIVER_TIME_SQL_MAX_ONCE', 20):
             self.update_errors(self.error_messages['args_error_overflow'])
             return self.render_to_response()
 

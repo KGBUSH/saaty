@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import time
+from core import app
 from core import sentry
 from core import kafkaBizLogger
 from common.framework.views import JsonFormView
@@ -19,7 +20,8 @@ class PickupTimeOverHeadView(JsonFormView):
     获取该商户取货时间开销
     """
     error_messages = {
-        'args_error_overflow': u'最多支持20组查询',
+        'args_error_overflow':
+            u'最多支持%s组查询' % str(app.config.get('PICKUP_TIME_SQL_MAX_ONCE',20)),
     }
 
     methods = ['POST', ]
@@ -32,7 +34,8 @@ class PickupTimeOverHeadView(JsonFormView):
         form_data = form.data
         supplier_info_list = form_data['supplierInfoList']
 
-        if len(supplier_info_list) > 20:
+        if len(supplier_info_list) > \
+                app.config.get('PICKUP_TIME_SQL_MAX_ONCE', 20):
             self.update_errors(self.error_messages['args_error_overflow'])
             return self.render_to_response()
 
