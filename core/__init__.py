@@ -5,6 +5,7 @@ import logging
 import importlib
 from flask import Flask
 from requests import Session
+from redis import Redis
 from requests_futures.sessions import FuturesSession
 from werkzeug.contrib.profiler import ProfilerMiddleware
 from kazoo.client import KazooClient
@@ -13,6 +14,7 @@ from common.db.router import AutoRouteSQLAlchemy
 from common.mq.kafka_logger import BizkafkaLogger
 from common.mq.kafka_logger import FreeKafkaLogger
 from common.config.cfgservice import Cfgservice
+from common.cache.dadacache import DadaCache
 from core.registry import RegistryService
 from core.registry import DiscoveryService
 from core import config
@@ -43,10 +45,28 @@ config_service = Cfgservice(
 if app.config['CFG_SERVICE']:
     config_service.init()
 
-
 # database
 db = AutoRouteSQLAlchemy(app)
 
+# redis
+redis = Redis(
+    host=app.config['REDIS_HOST'],
+    port=app.config['REDIS_PORT'],
+    db=app.config['REDIS_DATABASE_INDEX'],
+    socket_timeout=app.config.get('REDIS_SOCKET_TIMEOUT', 1),
+    retry_on_timeout=True,
+)
+
+# cache
+cache = DadaCache(app, config={
+    'REDIS_OBJ': redis,
+    'CACHE_TYPE': 'redis',
+    'CACHE_REDIS_HOST': '127.0.0.1',
+    'CACHE_REDIS_PORT': '6379',
+    'CACHE_REDIS_DB': 0,
+    'CACHE_DEFAULT_TIMEOUT': app.config['REDIS_SOCKET_TIMEOUT'],
+    'CACHE_KEY_PREFIX': app.config['CACHE_KEY_PREFIX'],
+})
 
 # http client
 http_pool = Session()
@@ -55,10 +75,8 @@ async_http_pool = FuturesSession(
     max_workers=4,
 )
 
-
 # sentry client
 sentry = Sentry(app)
-
 
 # kafka logger
 kafkaBizLogger = BizkafkaLogger(
@@ -71,14 +89,11 @@ freeKafkaLogger = FreeKafkaLogger(
     app_config=app.config,
 )
 
-
 # registry service
 registry_service = RegistryService(app)
 
-
 # discovery service
 discovery_service = DiscoveryService(app)
-
 
 if app.config['PROFILE']:
     app.wsgi_app = ProfilerMiddleware(

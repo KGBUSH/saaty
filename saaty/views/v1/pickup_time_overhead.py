@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import datetime
 import time
+from core import sentry
 from core import kafkaBizLogger
 from common.framework.views import JsonFormView
-from core import sentry
 from saaty.constants import kafka_event
+from saaty.forms.poi_time_value_form import SupplierPickupTimeForm
 from saaty.services.poi_time_value_service import \
     get_pickup_time_overhead_value_list
-from saaty.forms.poi_time_value_form import SupplierPickupTimeForm
 
 __all__ = [
     'PickupTimeOverHeadView',
@@ -26,9 +26,6 @@ class PickupTimeOverHeadView(JsonFormView):
 
     decorators = []
     form_class = SupplierPickupTimeForm
-
-    # def read_data_from_cache(self, supplier_info_list):
-
 
     def form_valid(self, form):
         start_time = time.time()
@@ -54,4 +51,15 @@ class PickupTimeOverHeadView(JsonFormView):
             "time_used": round(end_time - start_time, 3)
         }
         kafkaBizLogger.info(kafka_event.DYNAMIC_PICKUP_TIME_EVENT, info)
-        return self.render_to_response(res_pickup_time_list)
+
+        context = {'pickupTimeList': [
+            {'cityId': res_info['cityId'],
+             'supplierId': res_info['supplierId'],
+             'supplierLng': res_info['supplierLng'],
+             'supplierLat': res_info['supplierLat'],
+             'pickupTimeValue': res_info['pickupTimeValue'],
+             'pickupTimeRank': res_info['pickupTimeRank']}
+            for res_info in res_pickup_time_list
+        ]}
+
+        return self.render_to_response(context)

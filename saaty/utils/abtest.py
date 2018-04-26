@@ -13,7 +13,7 @@ __all__ = [
 
 def get_order_ab_test_flag(order_id, city_id):
     # 所有城市的ab分组流量配置
-    poi_city_param = app.config.get('POI_LATENCY_CITY_PARAM', {})
+    poi_city_param = app.config.get('POI_LATENCY_CITY_AB_TEST', {})
     city_param = poi_city_param.get(city_id, {})
 
     abtest_flag = get_abtest_id(
@@ -23,7 +23,7 @@ def get_order_ab_test_flag(order_id, city_id):
     )
 
     if abtest_flag == 0:
-        abtest_flag = 'None'
+        abtest_flag = 'None_-99'
 
     return abtest_flag
 
