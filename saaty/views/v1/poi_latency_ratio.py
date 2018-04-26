@@ -126,7 +126,7 @@ class POILatencyRatioView(JsonView):
 
         kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
-        if control_flag == 1:
+        if  1 == control_flag:
             dynamic_latency_ratio = 0.0
             dynamic_latency_delta = 0
 
