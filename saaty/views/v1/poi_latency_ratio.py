@@ -91,8 +91,8 @@ class POILatencyRatioView(JsonView):
                     latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})
                     param_group = latency_schema_group.get(latency_config_group, {})
 
-                    alpha_1 = param_group.get("alpha_1", 0.1)
-                    alpha_2 = param_group.get("alpha_2", 0.1)
+                    alpha_1 = param_group.get("alpha_1", 0.5)
+                    alpha_2 = param_group.get("alpha_2", 0.5)
                     latency_score = get_poi_latency_score(alpha_1,
                                                           alpha_2,
                                                           supplier_time_difficulty,
