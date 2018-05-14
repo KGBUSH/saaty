@@ -9,6 +9,7 @@ from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.utils.order_category import get_order_category
+from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_poi_latency_score
 from saaty.services.poi_time_latency import get_poi_latency_delta
 
@@ -74,12 +75,12 @@ class POILatencyRatioView(JsonView):
 
                 if city_id in enable_city_list:
                     # 获取延迟时效
-                    latency_score, supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_score(city_id,
-                                                                                                              supplier_id,
-                                                                                                              supplier_lng,
-                                                                                                              supplier_lat,
-                                                                                                              receiver_lng,
-                                                                                                              receiver_lat)
+                    supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty(city_id,
+                                                                                                    supplier_id,
+                                                                                                    supplier_lng,
+                                                                                                    supplier_lat,
+                                                                                                    receiver_lng,
+                                                                                                    receiver_lat)
 
                     # 获取AB测试分组
                     ab_test_flag = get_order_ab_test_flag(order_id, city_id)
@@ -89,6 +90,13 @@ class POILatencyRatioView(JsonView):
                     # 获取策略分组
                     latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})
                     param_group = latency_schema_group.get(latency_config_group, {})
+
+                    alpha_1 = param_group.get("alpha_1", 0.1)
+                    alpha_2 = param_group.get("alpha_2", 0.1)
+                    latency_score = get_poi_latency_score(alpha_1,
+                                                          alpha_2,
+                                                          supplier_time_difficulty,
+                                                          receiver_time_difficulty)
 
                     if latency_schema_group:
                         if latency_score >= param_group.get("threshold", 0):
