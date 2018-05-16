@@ -32,9 +32,14 @@ PROFILE = False
 
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
+SQLALCHEMY_DATABASE_URI = 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/dos_db'
+
 SQLALCHEMY_BINDS = {
     'saaty': 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/saaty_db',
     'saaty_slave': 'mysql://dev_readonly:6nvjq0_H@192.168.1.250:3307/saaty_db',
+    'dw_api_db': 'mysql://dev_readonly:6nvjq0_H@192.168.1.250:3307/dw_api',
+    'dw_api_db_slave': 'mysql://dev_readonly:6nvjq0_H@192.168.1.250:3307'
+                       '/dw_api',
 }
 
 SENTRY_DSN = ''
