@@ -146,8 +146,8 @@ class POILatencyRatioView(JsonView):
 
         mode_switch_test = app.config.get("TEST_MODE_SWITCH", 0)
         if mode_switch_test:
-            dynamic_latency_ratio = app.config.get("TEST_DYNAMIC_LATENCY_RATIO", 0.3)
-            dynamic_latency_delta = app.config.get("TEST_DYNAMIC_LATENCY_DELTA", 900)
+            dynamic_latency_ratio = app.config.get("TEST_DYNAMIC_LATENCY_RATIO", 0.0)
+            dynamic_latency_delta = app.config.get("TEST_DYNAMIC_LATENCY_DELTA", 0)
 
         context = {
             'LatencyRatio': dynamic_latency_ratio,
