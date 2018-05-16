@@ -43,6 +43,7 @@ class Task(object):
     def as_task(self):
         def task(body, meta):
             return self(**body)
+
         task.__name__ = self.func.__name__
         task.__module__ = self.func.__module__
         task.__doc__ = self.func.__doc__
