@@ -21,7 +21,7 @@ class PickupTimeOverHeadView(JsonFormView):
     """
     error_messages = {
         'args_error_overflow':
-            u'最多支持%s组查询' % str(app.config.get('PICKUP_TIME_SQL_MAX_ONCE',20)),
+            u'最多支持%s组查询' % str(app.config.get('PICKUP_TIME_SQL_MAX_ONCE', 20)),
     }
 
     methods = ['POST', ]
@@ -40,11 +40,15 @@ class PickupTimeOverHeadView(JsonFormView):
             return self.render_to_response()
 
         res_pickup_time_list = []
-        try:
-            res_pickup_time_list = get_pickup_time_overhead_value_list(
-                supplier_info_list)
-        except:
-            sentry.captureException()
+
+        res_pickup_time_list = get_pickup_time_overhead_value_list(
+            supplier_info_list)
+
+        # try:
+        #     res_pickup_time_list = get_pickup_time_overhead_value_list(
+        #         supplier_info_list)
+        # except:
+        #     sentry.captureException()
 
         end_time = time.time()
         info = {
@@ -56,10 +60,7 @@ class PickupTimeOverHeadView(JsonFormView):
         kafkaBizLogger.info(kafka_event.DYNAMIC_PICKUP_TIME_EVENT, info)
 
         context = {'pickupTimeList': [
-            {'cityId': res_info['cityId'],
-             'supplierId': res_info['supplierId'],
-             'supplierLng': res_info['supplierLng'],
-             'supplierLat': res_info['supplierLat'],
+            {'isDowngrade': res_info['isDowngrade'],
              'pickupTimeValue': res_info['pickupTimeValue'],
              'pickupTimeRank': res_info['pickupTimeRank']}
             for res_info in res_pickup_time_list
