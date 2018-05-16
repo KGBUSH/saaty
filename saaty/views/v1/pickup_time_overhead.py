@@ -41,14 +41,11 @@ class PickupTimeOverHeadView(JsonFormView):
 
         res_pickup_time_list = []
 
-        res_pickup_time_list = get_pickup_time_overhead_value_list(
-            supplier_info_list)
-
-        # try:
-        #     res_pickup_time_list = get_pickup_time_overhead_value_list(
-        #         supplier_info_list)
-        # except:
-        #     sentry.captureException()
+        try:
+            res_pickup_time_list = get_pickup_time_overhead_value_list(
+                supplier_info_list)
+        except:
+            sentry.captureException()
 
         end_time = time.time()
         info = {

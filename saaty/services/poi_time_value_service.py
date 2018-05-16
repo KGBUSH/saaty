@@ -116,17 +116,17 @@ def get_pickup_time_overhead_value_list(req_list=[]):
             except:
                 sentry.captureException()
 
-        # 按请求list顺序重排
-        res_key_value = {
-            cache_keys.CACHE_KEY_PICKUP_TIME_OVERHEAD.format(**res_info):
-                res_info for res_info in tmp_pickup_time_result_list
-        }
+    # 按请求list顺序重排
+    res_key_value = {
+        cache_keys.CACHE_KEY_PICKUP_TIME_OVERHEAD.format(**res_info):
+            res_info for res_info in tmp_pickup_time_result_list
+    }
 
-        pickup_time_result_list = []
-        for req_info in req_list:
-            key_req = cache_keys.CACHE_KEY_PICKUP_TIME_OVERHEAD.format(
-                **req_info)
-            pickup_time_result_list.append(res_key_value[key_req])
+    pickup_time_result_list = []
+    for req_info in req_list:
+        key_req = cache_keys.CACHE_KEY_PICKUP_TIME_OVERHEAD.format(
+            **req_info)
+        pickup_time_result_list.append(res_key_value[key_req])
 
     return pickup_time_result_list
 
