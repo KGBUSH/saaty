@@ -39,6 +39,7 @@ class ReceiverTimeOverHeadView(JsonFormView):
             return self.render_to_response()
 
         res_receiver_time_list = []
+
         try:
             res_receiver_time_list = get_receiver_time_overhead_value_list(
                 receiver_info_list)
@@ -55,9 +56,7 @@ class ReceiverTimeOverHeadView(JsonFormView):
         kafkaBizLogger.info(kafka_event.DYNAMIC_PICKUP_TIME_EVENT, info)
 
         context = {'receiverTimeList': [
-            {'receiverLng': res_info['receiverLng'],
-             'receiverLat': res_info['receiverLat'],
-             'cityId': res_info['cityId'],
+            {'isDowngrade': res_info['isDowngrade'],
              'receiverTimeValue': res_info['receiverTimeValue'],
              'receiverTimeRank': res_info['receiverTimeRank']}
             for res_info in res_receiver_time_list]}
