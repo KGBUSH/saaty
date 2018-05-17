@@ -6,9 +6,12 @@ import time
 from core import app
 from core import sentry
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 from sqlalchemy.dialects.mysql import insert
 >>>>>>> [add] add jobs
+=======
+>>>>>>> [update] update job worker
 
 __all__ = [
     "load_poi_time_supplier_data",
@@ -35,10 +38,14 @@ def get_conn(conn_str):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def load_poi_time_supplier_data(batch_size=2000):
 =======
 def load_poi_time_supplier_data(batch_size=5000):
 >>>>>>> [add] add jobs
+=======
+def load_poi_time_supplier_data(batch_size=2000):
+>>>>>>> [update] update job worker
     conn_get = get_conn(app.config['SQLALCHEMY_BINDS']['dw_api_db'])
     cursor_get = conn_get.cursor(MySQLdb.cursors.SSDictCursor)
 
