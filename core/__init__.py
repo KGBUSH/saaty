@@ -53,14 +53,14 @@ db = AutoRouteSQLAlchemy(app)
 # mq client
 mq_consumer = RoutingConsumer(
     app=app,
-    brokers_key='DOS_ROUTING_CONSUMER_BROKERS',
+    brokers_key='SAATY_ROUTING_CONSUMER_BROKERS',
     cfg_service=config_service,
     system_name=config.APP_NAME,
 )
 
 mq_producer = RoutingProducer(
     app=app,
-    brokers_key='DOS_ROUTING_PRODUCER_BROKERS',
+    brokers_key='SAATY_ROUTING_PRODUCER_BROKERS',
     cfg_service=config_service,
     system_name=config.APP_NAME,
 )

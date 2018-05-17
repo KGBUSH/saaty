@@ -12,12 +12,11 @@ APP_NAME = __APP_NAME__ = 'saaty'
 
 DEBUG = False
 
-#单次查询取货时间，sql最大条目
+# 单次查询取货时间，sql最大条目
 PICKUP_TIME_SQL_MAX_ONCE = 50
 
-#单次查询送达时间，sql最大条目
+# 单次查询送达时间，sql最大条目
 RECEIVER_TIME_SQL_MAX_ONCE = 50
-
 
 ROOT_URLCONF = 'saaty.urls'
 
@@ -32,7 +31,7 @@ PROFILE = False
 
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
-SQLALCHEMY_DATABASE_URI = 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/dos_db'
+SQLALCHEMY_DATABASE_URI = 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/saaty_db'
 
 SQLALCHEMY_BINDS = {
     'saaty': 'mysql://dev_w:6nvjq0_HW@192.168.1.250:3307/saaty_db',
@@ -58,3 +57,23 @@ REDIS_SOCKET_TIMEOUT = 0.1
 REDIS_DATABASE_INDEX = 0
 
 CACHE_KEY_PREFIX = 'saaty:'
+
+# mq client config
+SAATY_ROUTING_CONSUMER_BROKERS = {
+    'dev/rabbit/rabbit-saaty': 'amqp://saaty:Pass1234@192.168.1.250:5672/%2Fsaaty',
+    'dev/rabbit/default': 'amqp://saaty:Pass1234@192.168.1.250:5672/%2Fsaaty'
+}
+
+SAATY_ROUTING_PRODUCER_BROKERS = {
+    'dev/rabbit/rabbit-saaty': 'amqp://saaty:Pass1234@192.168.1.250:5672/%2Fsaaty',
+    'dev/rabbit/default': 'amqp://saaty:Pass1234@192.168.1.250:5672/%2Fsaaty'
+}
+
+RABBIT_HBASE_THRIFT_HOST = '192.168.1.250'
+RABBIT_HBASE_THRIFT_PORT = 9090
+RABBIT_HBASE_TABLE = 'rabbit-message'
+
+RABBIT_REDIS_HOST = '192.168.1.250'
+RABBIT_REDIS_PORT = 6379
+
+MQ_CURRENT_ENVIRONMENT = 'dev'

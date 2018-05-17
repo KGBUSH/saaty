@@ -5,7 +5,6 @@ import MySQLdb
 import time
 from core import app
 from core import sentry
-from sqlalchemy.dialects.mysql import insert
 
 __all__ = [
     "load_poi_time_supplier_data",
@@ -31,7 +30,7 @@ def get_conn(conn_str):
     return conn
 
 
-def load_poi_time_supplier_data(batch_size=5000):
+def load_poi_time_supplier_data(batch_size=2000):
     conn_get = get_conn(app.config['SQLALCHEMY_BINDS']['dw_api_db'])
     cursor_get = conn_get.cursor(MySQLdb.cursors.SSDictCursor)
 
