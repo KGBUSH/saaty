@@ -18,11 +18,13 @@ class TopicImproperlyConfigured(ImproperlyConfigured):
 
 class Task(object):
 
-    def __init__(self, func, producer=None, consumer=None, topic=None):
+    def __init__(self, func, producer=None, consumer=None,
+                 topic=None, async=True):
         self.func = func
         self.producer = producer
         self.consumer = consumer
         self.topic = topic
+        self.async = async
 
     def delay(self, **kwargs):
         if self.producer is None:
@@ -41,7 +43,6 @@ class Task(object):
     def as_task(self):
         def task(body, meta):
             return self(**body)
-
         task.__name__ = self.func.__name__
         task.__module__ = self.func.__module__
         task.__doc__ = self.func.__doc__
@@ -55,4 +56,5 @@ class Task(object):
         self.consumer.consume(
             queue=self.topic,
             listener=self.as_task(),
+            async=self.async,
         )
