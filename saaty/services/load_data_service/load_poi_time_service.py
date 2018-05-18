@@ -39,7 +39,7 @@ def load_poi_time_supplier_data(batch_size=2000):
 
     select_sql = 'select * from poi_supplier_time_difficulty'
     cursor_get.execute(select_sql)
-
+    print("start load_poi_time_supplier_data --add by jiang ")
     i = 0
     while True:
         rows = cursor_get.fetchmany(batch_size)
@@ -60,6 +60,8 @@ def load_poi_time_supplier_data(batch_size=2000):
     cursor_set.close()
     conn_get.close()
     conn_set.close()
+
+    print("complete load_poi_time_supplier_data --add by jiang ")
 
 
 insert_sql_pickup_time = '''insert into poi_supplier_time_difficulty 
