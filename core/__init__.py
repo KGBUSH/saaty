@@ -13,6 +13,8 @@ from raven.contrib.flask import Sentry
 from common.db.router import AutoRouteSQLAlchemy
 from common.mq.kafka_logger import BizkafkaLogger
 from common.mq.kafka_logger import FreeKafkaLogger
+from common.mq.routing_client import RoutingConsumer
+from common.mq.routing_client import RoutingProducer
 from common.config.cfgservice import Cfgservice
 from common.cache.dadacache import DadaCache
 from core.registry import RegistryService
@@ -47,6 +49,22 @@ if app.config['CFG_SERVICE']:
 
 # database
 db = AutoRouteSQLAlchemy(app)
+
+# mq client
+mq_consumer = RoutingConsumer(
+    app=app,
+    brokers_key='SAATY_ROUTING_CONSUMER_BROKERS',
+    cfg_service=config_service,
+    system_name=config.APP_NAME,
+)
+
+mq_producer = RoutingProducer(
+    app=app,
+    brokers_key='SAATY_ROUTING_PRODUCER_BROKERS',
+    cfg_service=config_service,
+    system_name=config.APP_NAME,
+)
+mq_producer.start()
 
 # redis
 redis = Redis(
