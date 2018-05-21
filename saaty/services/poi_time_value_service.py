@@ -63,7 +63,10 @@ def get_pickup_time_use_database(req_list=[]):
                                  'supplierLng': req_info['supplierLng'],
                                  'supplierLat': req_info['supplierLat']})
         else:
-            local_city_info = local_cfg[req_info["cityId"]]
+            local_city_info = app.config.get(
+                'POI_TIME_OVERHEAD_DEFAULT_VALUE_DEFAULT_CITY', {})
+            if str(req_info["cityId"]) in local_cfg:
+                local_city_info = local_cfg[str(req_info["cityId"])]
             database_res.append({'pickupTimeValue':
                                      float(local_city_info["pickup_time"]),
                                  'pickupTimeRank':
@@ -173,7 +176,10 @@ def get_receiver_time_use_database(req_list=[]):
                                  'receiverLat': req_info['receiverLat'],
                                  'cityId': req_info['cityId']})
         else:
-            local_city_info = local_cfg[req_info["cityId"]]
+            local_city_info = app.config.get(
+                'POI_TIME_OVERHEAD_DEFAULT_VALUE_DEFAULT_CITY', {})
+            if str(req_info["cityId"]) in local_cfg:
+                local_city_info = local_cfg[str(req_info["cityId"])]
             database_res.append({'receiverTimeValue':
                                      float(local_city_info["receiver_time"]),
                                  'receiverTimeRank':
