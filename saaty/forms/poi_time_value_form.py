@@ -16,7 +16,6 @@ class SupplierPickupTimeForm(FlaskForm):
         'error_no_city': u'城市id为空',
         'error_no_lng': u'发货地经度为空',
         'error_no_lat': u'发货地纬度为空',
-        'error_no_order_id': u'订单id为空',
         'error_no_supplier_id': u'商户id为空'
     }
 
@@ -30,8 +29,6 @@ class SupplierPickupTimeForm(FlaskForm):
         for supplier_info in supplier_info_list:
             if 'cityId' not in supplier_info:
                 raise ValidationError(self.error_messages['error_no_city'])
-            if 'orderId' not in supplier_info:
-                raise ValidationError(self.error_messages['error_no_order_id'])
             if 'supplierLng' not in supplier_info:
                 raise ValidationError(self.error_messages['error_no_lng'])
             if 'supplierLat' not in supplier_info:
@@ -46,7 +43,6 @@ class ReceiverTimeForm(FlaskForm):
         'error_no_city': u'城市id为空',
         'error_no_lng': u'收货地经度为空',
         'error_no_lat': u'收货地纬度为空',
-        'error_no_order_id': u'订单id为空',
         'error_no_supplier_id': u'商户id为空'
     }
     receiverInfoList = ListField('收货地信息列表', validators=[
@@ -58,8 +54,6 @@ class ReceiverTimeForm(FlaskForm):
         for receiver_info in receiver_info_list:
             if 'cityId' not in receiver_info:
                 raise ValidationError(self.error_messages['error_no_city'])
-            if 'orderId' not in receiver_info:
-                raise ValidationError(self.error_messages['error_no_order_id'])
             if 'receiverLng' not in receiver_info:
                 raise ValidationError(self.error_messages['error_no_lng'])
             if 'receiverLat' not in receiver_info:
