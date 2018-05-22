@@ -5,13 +5,6 @@ import MySQLdb
 import time
 from core import app
 from core import sentry
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-from sqlalchemy.dialects.mysql import insert
->>>>>>> [add] add jobs
-=======
->>>>>>> [update] update job worker
 
 __all__ = [
     "load_poi_time_supplier_data",
@@ -37,15 +30,7 @@ def get_conn(conn_str):
     return conn
 
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 def load_poi_time_supplier_data(batch_size=2000):
-=======
-def load_poi_time_supplier_data(batch_size=5000):
->>>>>>> [add] add jobs
-=======
-def load_poi_time_supplier_data(batch_size=2000):
->>>>>>> [update] update job worker
     conn_get = get_conn(app.config['SQLALCHEMY_BINDS']['dw_api_db'])
     cursor_get = conn_get.cursor(MySQLdb.cursors.SSDictCursor)
 
@@ -54,11 +39,7 @@ def load_poi_time_supplier_data(batch_size=2000):
 
     select_sql = 'select * from poi_supplier_time_difficulty'
     cursor_get.execute(select_sql)
-<<<<<<< HEAD
     # print("start load_poi_time_supplier_data --add by jiang ")
-=======
-
->>>>>>> [add] add jobs
     i = 0
     while True:
         rows = cursor_get.fetchmany(batch_size)
@@ -80,11 +61,8 @@ def load_poi_time_supplier_data(batch_size=2000):
     conn_get.close()
     conn_set.close()
 
-<<<<<<< HEAD
     # print("complete load_poi_time_supplier_data --add by jiang ")
 
-=======
->>>>>>> [add] add jobs
 
 insert_sql_pickup_time = '''insert into poi_supplier_time_difficulty 
                                 (supplier_id, 
