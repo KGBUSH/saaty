@@ -24,6 +24,8 @@ urls = [
 
 # JOBS
 urls.extend([
+    # update POI supplier pickup time difficulty info
     ('/job/update_poi_time_supplier_data', POITimeSupplierDifficultyUpdateJob
      .as_view('job_update_poi_time_supplier_data')),
+
 ])

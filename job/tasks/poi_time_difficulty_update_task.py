@@ -16,7 +16,6 @@ __all__ = [
 @task(consumer=mq_consumer, producer=mq_producer,
       topic='job_update_poi_supplier_pickup_time_data')
 def update_poi_supplier_pickup_time_data():
-
     try:
         batch_size = app.config.get('JOB_POI_TIME_DIFFICULT_UPDATE_BATCH_SIZE',
                                     2000)

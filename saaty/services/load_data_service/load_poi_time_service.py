@@ -39,12 +39,13 @@ def load_poi_time_supplier_data(batch_size=2000):
 
     select_sql = 'select * from poi_supplier_time_difficulty'
     cursor_get.execute(select_sql)
-    # print("start load_poi_time_supplier_data --add by jiang ")
+    print("start load_poi_time_supplier_data ")
     i = 0
     while True:
         rows = cursor_get.fetchmany(batch_size)
         if not rows:
             if 0 == i:
+                print('dw_api.poi_supplier_time_difficulty data error!')
                 sentry.captureException()
             break
 
@@ -53,6 +54,7 @@ def load_poi_time_supplier_data(batch_size=2000):
         for row in rows:
             row['update_time'] = format_time
 
+        print('length rows = ', len(rows))
         cursor_set.executemany(insert_sql_pickup_time, rows)
         conn_set.commit()
 
@@ -61,7 +63,7 @@ def load_poi_time_supplier_data(batch_size=2000):
     conn_get.close()
     conn_set.close()
 
-    # print("complete load_poi_time_supplier_data --add by jiang ")
+    print("complete load_poi_time_supplier_data")
 
 
 insert_sql_pickup_time = '''insert into poi_supplier_time_difficulty 
@@ -87,3 +89,4 @@ insert_sql_pickup_time = '''insert into poi_supplier_time_difficulty
                                 poi_value = VALUES (poi_value), 
                                 create_time = VALUES (create_time), 
                                 update_time = VALUES (update_time)'''
+
