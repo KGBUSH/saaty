@@ -34,7 +34,7 @@ def load_poi_time_supplier_data(batch_size=2000):
     conn_get = get_conn(app.config['SQLALCHEMY_BINDS']['dw_api_db'])
     cursor_get = conn_get.cursor(MySQLdb.cursors.SSDictCursor)
 
-    conn_set = get_conn(app.config['SQLALCHEMY_DATABASE_URI'])
+    conn_set = get_conn(app.config['SQLALCHEMY_BINDS']['saaty'])
     cursor_set = conn_set.cursor()
 
     select_sql = 'select * from poi_supplier_time_difficulty'
@@ -55,7 +55,7 @@ def load_poi_time_supplier_data(batch_size=2000):
             row['update_time'] = format_time
 
         print('length rows = ', len(rows))
-        cursor_set.executemany(insert_sql_pickup_time, rows)
+        cursor_set.executemany(insert_sql_pickup_time_difficulty, rows)
         conn_set.commit()
 
     cursor_get.close()
@@ -66,7 +66,31 @@ def load_poi_time_supplier_data(batch_size=2000):
     print("complete load_poi_time_supplier_data")
 
 
-insert_sql_pickup_time = '''insert into poi_supplier_time_difficulty 
+insert_sql_receiver_time_difficulty = '''insert into 
+poi_supplier_time_difficulty (receiver_lng, 
+                                receiver_lat, 
+                                city_id, 
+                                poi_value, 
+                                create_time, 
+                                update_time) VALUES  
+                                (%(supplier_id)s, 
+                                %(supplier_lng)s, 
+                                %(supplier_lat)s,
+                                %(city_id)s, 
+                                %(poi_value)s, 
+                                %(create_time)s, 
+                                %(update_time)s 
+                                ) ON duplicate KEY UPDATE  
+                                receiver_lng = VALUES (receiver_lng), 
+                                receiver_lat = VALUES (receiver_lat), 
+                                city_id = VALUES  (city_id), 
+                                poi_value = VALUES (poi_value), 
+                                create_time = VALUES (create_time), 
+                                update_time = VALUES (update_time)'''
+
+
+
+insert_sql_pickup_time_difficulty = '''insert into poi_supplier_time_difficulty 
                                 (supplier_id, 
                                 supplier_lng, 
                                 supplier_lat, 
