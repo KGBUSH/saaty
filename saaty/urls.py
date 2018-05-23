@@ -5,7 +5,9 @@ from saaty.views.v1.poi_latency_ratio import POILatencyRatioView
 from saaty.views.v1.pickup_time_overhead import PickupTimeOverHeadView
 from saaty.views.v1.receiver_time_overhead import ReceiverTimeOverHeadView
 from saaty.views.job.poi_time_difficulty_update import \
-    POITimeSupplierDifficultyUpdateJob
+    POITimeSupplierDifficultyUpdateJob, POITimeReceiverDifficultyUpdateJob
+from saaty.views.job.poi_time_cost_update import \
+    POITimeReceiverTimeCostUpdateJob, POITimeSupplierPickupTimeCostUpdateJob
 
 urls = [
     # ADMIN
@@ -27,5 +29,18 @@ urls.extend([
     # update POI supplier pickup time difficulty info
     ('/job/update_poi_time_supplier_data', POITimeSupplierDifficultyUpdateJob
      .as_view('job_update_poi_time_supplier_data')),
+
+    # update POI receiver time difficulty info
+    ('/job/update_poi_time_receiver_data', POITimeReceiverDifficultyUpdateJob
+     .as_view('job_update_poi_time_receiver_data')),
+
+    # update POI receiver time cost info
+    ('/job/update_receiver_time_cost_data', POITimeReceiverTimeCostUpdateJob
+     .as_view('job_update_receiver_time_cost_data')),
+
+    # update POI supplier pickup time cost info
+    ('/job/update_supplier_time_cost_data',
+     POITimeSupplierPickupTimeCostUpdateJob.as_view(
+         'job_update_poi_pickup_time_cost_data')),
 
 ])
