@@ -8,6 +8,7 @@ from core import kafkaBizLogger
 from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
+from saaty.utils.config_detail import get_config_detail
 from saaty.utils.order_category import get_order_category
 from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_poi_latency_score
@@ -61,6 +62,7 @@ class POILatencyRatioView(JsonView):
             'threshold': 0.7
         }
         latency_score = 0.0
+        get_difficulty_method = 'm1'
         supplier_time_difficulty = 0.0
         receiver_time_difficulty = 0.0
         is_service_open = 0
@@ -74,19 +76,22 @@ class POILatencyRatioView(JsonView):
                 enable_city_list = app.config.get("POI_LATENCY_CITY_ENABLE_LIST", [])
 
                 if city_id in enable_city_list:
-                    # 获取延迟时效
-                    supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty(city_id,
-                                                                                                    supplier_id,
-                                                                                                    supplier_lng,
-                                                                                                    supplier_lat,
-                                                                                                    receiver_lng,
-                                                                                                    receiver_lat)
-
                     # 获取AB测试分组
                     ab_test_flag = get_order_ab_test_flag(order_id, city_id)
-                    items = ab_test_flag.strip().split('_')
-                    control_flag = 1 if items[0] == 'con' else 0
-                    latency_config_group = int(items[1])
+
+                    control_flag, latency_config_group, get_difficulty_method = get_config_detail(ab_test_flag)
+
+                    if get_difficulty_method == 'm1':
+                        # 获取延迟时效
+                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty(city_id,
+                                                                                                        supplier_id,
+                                                                                                        supplier_lng,
+                                                                                                        supplier_lat,
+                                                                                                        receiver_lng,
+                                                                                                        receiver_lat)
+                    elif get_difficulty_method == 'm2':
+                        supplier_time_difficulty, receiver_time_difficulty = 0.0, 0.0
+
                     # 获取策略分组
                     latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})
                     param_group = latency_schema_group.get(latency_config_group, {})
@@ -128,8 +133,9 @@ class POILatencyRatioView(JsonView):
             "dynamic_latency_delta": dynamic_latency_delta,
             "ab_test_flag": ab_test_flag,
             "control_flag": control_flag,
-            "param_group": param_group,
             "latency_config_group": latency_config_group,
+            "param_group": param_group,
+            "get_difficulty_method": get_difficulty_method,
             "latency_score": latency_score,
             "supplier_time_difficulty": supplier_time_difficulty,
             "receiver_time_difficulty": receiver_time_difficulty,
