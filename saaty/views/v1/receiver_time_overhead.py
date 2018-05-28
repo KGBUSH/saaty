@@ -53,7 +53,7 @@ class ReceiverTimeOverHeadView(JsonFormView):
                 '%Y-%m-%d %H:%M:%S'),
             "time_used": round(end_time - start_time, 3)
         }
-        kafkaBizLogger.info(kafka_event.DYNAMIC_PICKUP_TIME_EVENT, info)
+        kafkaBizLogger.info(kafka_event.DYNAMIC_RECEIVER_TIME_EVENT, info)
 
         context = {'receiverTimeList': [
             {'isDowngrade': res_info['isDowngrade'],
