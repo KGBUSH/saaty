@@ -62,6 +62,7 @@ class POILatencyRatioView(JsonView):
             'threshold': 0.7
         }
         latency_score = 0.0
+        get_difficulty_method = 'm1'
         supplier_time_difficulty = 0.0
         receiver_time_difficulty = 0.0
         is_service_open = 0
@@ -132,8 +133,9 @@ class POILatencyRatioView(JsonView):
             "dynamic_latency_delta": dynamic_latency_delta,
             "ab_test_flag": ab_test_flag,
             "control_flag": control_flag,
-            "param_group": param_group,
             "latency_config_group": latency_config_group,
+            "param_group": param_group,
+            "get_difficulty_method": get_difficulty_method,
             "latency_score": latency_score,
             "supplier_time_difficulty": supplier_time_difficulty,
             "receiver_time_difficulty": receiver_time_difficulty,
