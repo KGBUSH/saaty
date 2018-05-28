@@ -233,6 +233,5 @@ crashlytics-build.properties
 
 # Custome
 core/config/local.py
-
 resource_data/
 venv/
