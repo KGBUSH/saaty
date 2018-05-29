@@ -134,7 +134,7 @@ def get_poi_latency_difficulty_m1(city_id, supplier_id, supplier_lng, supplier_l
     return supplier_time_difficulty, receiver_time_difficulty
 
 
-def get_poi_latency_difficulty_m2(city_id, supplier_id, receiver_lng, receiver_lat):
+def get_poi_latency_difficulty_m2(supplier_id, receiver_lng, receiver_lat):
     """
     获取取货难度系数，送达难度系数
     :param city_id:
