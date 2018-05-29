@@ -92,8 +92,7 @@ class POILatencyRatioView(JsonView):
                                                                                                            receiver_lng,
                                                                                                            receiver_lat)
                     elif get_difficulty_method == 'm2':
-                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m2(city_id,
-                                                                                                           supplier_id,
+                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m2(supplier_id,
                                                                                                            receiver_lng,
                                                                                                            receiver_lat)
                     elif get_difficulty_method == 'm3':

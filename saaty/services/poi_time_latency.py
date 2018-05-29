@@ -30,8 +30,8 @@ supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id
 receiver_geohash_weight_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
 
 # M3模型专用
-supplier_id_quantile_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_quantile_dict.0.pkl")
-receiver_geohash_quantile_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_quantile_dict.0.pkl")
+# supplier_id_quantile_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_quantile_dict.0.pkl")
+# receiver_geohash_quantile_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_quantile_dict.0.pkl")
 
 
 def read_supplier_time_difficulty(city_id, supplier_id, supplier_lng,
@@ -143,6 +143,8 @@ def get_poi_latency_difficulty_m2(supplier_id, receiver_lng, receiver_lat):
     :param receiver_lat:
     :return:
     """
+    # supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
+    # receiver_geohash_weight_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
 
     supplier_id_weight = supplier_id_weight_dict.get(str(supplier_id), 0)
     supplier_weight_min = -4.0
