@@ -22,6 +22,17 @@ __all__ = [
     'get_poi_latency_difficulty_m3'
 ]
 
+# 初始化LR权重模型映射文件
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
+
+# M2模型专用
+supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
+receiver_geohash_weight_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
+
+# M3模型专用
+supplier_id_quantile_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_quantile_dict.0.pkl")
+receiver_geohash_quantile_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_quantile_dict.0.pkl")
+
 
 def read_supplier_time_difficulty(city_id, supplier_id, supplier_lng,
                                   supplier_lat):
@@ -133,14 +144,6 @@ def get_poi_latency_difficulty_m2(city_id, supplier_id, receiver_lng, receiver_l
     :return:
     """
 
-    PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
-    # print PROJECT_PATH
-
-    supplier_id_weight_dict = load_object(
-        PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
-    receiver_geohash_weight_dict = load_object(
-        PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
-
     supplier_id_weight = supplier_id_weight_dict.get(str(supplier_id), 0)
     supplier_weight_min = -4.0
     supplier_weight_max = 4.0
@@ -164,12 +167,6 @@ def get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_l
     :param receiver_lat:
     :return:
     """
-    PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
-
-    supplier_id_quantile_dict = load_object(
-        PROJECT_PATH + "/resource_data/supplier_id_quantile_dict.0.pkl")
-    receiver_geohash_quantile_dict = load_object(
-        PROJECT_PATH + "/resource_data/receiver_geohash_quantile_dict.0.pkl")
 
     supplier_id_quantile = supplier_id_quantile_dict[int(city_id)].get(supplier_id)
     supplier_time_difficulty = supplier_id_quantile
