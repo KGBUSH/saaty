@@ -169,12 +169,14 @@ def get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_l
     :return:
     """
 
-    supplier_id_quantile = supplier_id_quantile_dict[int(city_id)].get(supplier_id)
-    supplier_time_difficulty = supplier_id_quantile
+    supplier_time_difficulty, receiver_time_difficulty = 0.0, 0.0
 
-    receiver_geohash = geohash.encode(receiver_lng, receiver_lat, 7)
-    receiver_geohash_quantile = receiver_geohash_quantile_dict[int(city_id)].get(str(receiver_geohash))
-    receiver_time_difficulty = receiver_geohash_quantile
+    # supplier_id_quantile = supplier_id_quantile_dict[int(city_id)].get(supplier_id)
+    # supplier_time_difficulty = supplier_id_quantile
+    #
+    # receiver_geohash = geohash.encode(receiver_lng, receiver_lat, 7)
+    # receiver_geohash_quantile = receiver_geohash_quantile_dict[int(city_id)].get(str(receiver_geohash))
+    # receiver_time_difficulty = receiver_geohash_quantile
 
     return supplier_time_difficulty, receiver_time_difficulty
 
