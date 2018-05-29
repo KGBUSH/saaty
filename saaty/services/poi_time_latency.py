@@ -148,13 +148,13 @@ def get_poi_latency_difficulty_m2(supplier_id, receiver_lng, receiver_lat):
     supplier_id_weight = supplier_id_weight_dict.get(str(supplier_id), 0)
     supplier_weight_min = -4.0
     supplier_weight_max = 4.0
-    supplier_time_difficulty = normalize(supplier_id_weight, supplier_weight_min, supplier_weight_max)
+    supplier_time_difficulty = 1.0 - normalize(supplier_id_weight, supplier_weight_min, supplier_weight_max)
 
     receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
     receiver_geohash_weight = receiver_geohash_weight_dict.get(str(receiver_geohash), 0)
     receiver_weight_min = -4.0
     receiver_weight_max = 4.0
-    receiver_time_difficulty = normalize(receiver_geohash_weight, receiver_weight_min, receiver_weight_max)
+    receiver_time_difficulty = 1.0 - normalize(receiver_geohash_weight, receiver_weight_min, receiver_weight_max)
 
     return supplier_time_difficulty, receiver_time_difficulty
 
