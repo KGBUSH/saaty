@@ -6,6 +6,7 @@ from core import db
 from core import cache
 from core import app
 from core import sentry
+import geohash
 from saaty.constants import cache_keys
 from saaty.constants import cache_expire
 from saaty.models.poi_time_overhead import POISupplierTimeOverhead
@@ -136,29 +137,33 @@ def get_pickup_time_overhead_value_list(req_list=[]):
 
 @read()
 def get_receiver_time_use_database(req_list=[]):
-    database_res_tmp = POIReceiverTimeOverhead.query \
-        .filter(db.or_(db.and_(POIReceiverTimeOverhead.receiver_lng ==
-                               info_list["receiverLng"],
-                               POIReceiverTimeOverhead.receiver_lat ==
-                               info_list["receiverLat"],
-                               POIReceiverTimeOverhead.city_id ==
-                               info_list["cityId"])
-                       for info_list in req_list)).all()
+    geohash_lish = [
+        geohash.encode(latitude=info_list["receiverLat"],
+                       longitude=info_list["receiverLng"],
+                       precision=8)
+        for info_list in req_list
+    ]
+
+    geohash_database = POIReceiverTimeOverhead.query \
+        .filter(POIReceiverTimeOverhead.geohash
+                .in_(geohash_lish)).all()
 
     req_dict = {}
-    if len(database_res_tmp) > 0:
-        for res_info in database_res_tmp:
+    if len(geohash_database) > 0:
+        key_list = [cache_keys.CACHE_KEY_RECEIVER_TIME_OVERHEAD.format(
+            **kwargs) for kwargs in req_list]
+        for hash_res in geohash_database:
             kwargs = {
-                "receiverLng": res_info.receiver_lng,
-                "receiverLat": res_info.receiver_lat,
-                "cityId": res_info.city_id
+                "receiverLng": hash_res.receiver_lng,
+                "receiverLat": hash_res.receiver_lat,
+                "cityId": hash_res.city_id
             }
             key_info = cache_keys.CACHE_KEY_RECEIVER_TIME_OVERHEAD.format(
                 **kwargs)
-            req_dict[key_info] = res_info
+            if key_info in key_list:
+                req_dict[key_info] = hash_res
 
     database_res = []
-
     local_cfg = app.config.get('POI_TIME_OVERHEAD_DEFAULT_VALUE', {})
 
     # 查询不到的数据，使用默认值

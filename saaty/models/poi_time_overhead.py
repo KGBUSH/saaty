@@ -40,6 +40,7 @@ class POIReceiverTimeOverhead(Model):
     time_rank = db.Column(db.Float)  # 该时间在城市排名
     create_time = db.Column(db.TIMESTAMP)  # 创建时间
     update_time = db.Column(db.TIMESTAMP)  # 更新时间
+    geohash = db.Column(db.VARCHAR, index=True, nullable=False)  # geohash
 
 # if __name__ == '__main__':
 #

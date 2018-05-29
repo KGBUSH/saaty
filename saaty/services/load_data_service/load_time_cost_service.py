@@ -111,14 +111,16 @@ insert into poi_receiver_time_overhead
                                 receiver_time,
                                 time_rank, 
                                 create_time, 
-                                update_time) VALUES  
+                                update_time,
+                                geohash) VALUES  
                                 (%(receiver_lng)s, 
                                 %(receiver_lat)s,
                                 %(city_id)s,
                                 %(receiver_time)s,
                                 %(time_rank)s, 
                                 %(create_time)s, 
-                                %(update_time)s 
+                                %(update_time)s,
+                                %(geohash)s 
                                 ) ON duplicate KEY UPDATE  
                                 receiver_lng = VALUES (receiver_lng), 
                                 receiver_lat = VALUES (receiver_lat), 
@@ -126,7 +128,8 @@ insert into poi_receiver_time_overhead
                                 receiver_time = VALUES (receiver_time),
                                 time_rank = VALUES (time_rank),
                                 create_time = VALUES (create_time), 
-                                update_time = VALUES (update_time)
+                                update_time = VALUES (update_time),
+                                geohash = VALUES (geohash)
                                 '''
 
 insert_sql_pickup_time_cost = '''
