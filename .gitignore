@@ -235,5 +235,5 @@ crashlytics-build.properties
 core/config/local.py
 saaty/.Python
 saaty/pip-selfcheck.json
-resource_data/*.csv
+saaty/resource_data/*.csv
 venv/

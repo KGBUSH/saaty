@@ -3,8 +3,12 @@
 #
 # Copyright (C) 2018 xuekun.zhuang <zhuangxuekun@imdada.cn>
 
+
+import os
+import geohash
 from core import app
 from core import cache
+from saaty.utils.utils import save_object, load_object, normalize
 from saaty.constants import cache_keys
 from saaty.constants import cache_expire
 from saaty.models.poi_time_difficulty import POIReceiverTimeDifficulty
@@ -13,7 +17,9 @@ from saaty.models.poi_time_difficulty import POISupplierTimeDifficulty
 __all__ = [
     'get_poi_latency_score',
     'get_poi_latency_delta',
-    'get_poi_latency_difficulty'
+    'get_poi_latency_difficulty_m1',
+    'get_poi_latency_difficulty_m2',
+    'get_poi_latency_difficulty_m3'
 ]
 
 
@@ -90,8 +96,7 @@ def read_poi_receiver_time_difficulty(city_id, receiver_lng, receiver_lat):
     return receiver_time_difficulty
 
 
-def get_poi_latency_difficulty(city_id, supplier_id, supplier_lng, supplier_lat,
-                               receiver_lng, receiver_lat):
+def get_poi_latency_difficulty_m1(city_id, supplier_id, supplier_lng, supplier_lat, receiver_lng, receiver_lat):
     """
     获取取货难度系数，送达难度系数
     :param city_id:
@@ -114,6 +119,64 @@ def get_poi_latency_difficulty(city_id, supplier_id, supplier_lng, supplier_lat,
         receiver_lat=receiver_lat,
         receiver_lng=receiver_lng
     )
+
+    return supplier_time_difficulty, receiver_time_difficulty
+
+
+def get_poi_latency_difficulty_m2(city_id, supplier_id, receiver_lng, receiver_lat):
+    """
+    获取取货难度系数，送达难度系数
+    :param city_id:
+    :param supplier_id:
+    :param receiver_lng:
+    :param receiver_lat:
+    :return:
+    """
+
+    PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
+    # print PROJECT_PATH
+
+    supplier_id_weight_dict = load_object(
+        PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
+    receiver_geohash_weight_dict = load_object(
+        PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
+
+    supplier_id_weight = supplier_id_weight_dict.get(str(supplier_id), 0)
+    supplier_weight_min = -4.0
+    supplier_weight_max = 4.0
+    supplier_time_difficulty = normalize(supplier_id_weight, supplier_weight_min, supplier_weight_max)
+
+    receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
+    receiver_geohash_weight = receiver_geohash_weight_dict.get(str(receiver_geohash), 0)
+    receiver_weight_min = -4.0
+    receiver_weight_max = 4.0
+    receiver_time_difficulty = normalize(receiver_geohash_weight, receiver_weight_min, receiver_weight_max)
+
+    return supplier_time_difficulty, receiver_time_difficulty
+
+
+def get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_lat):
+    """
+    获取取货难度系数，送达难度系数
+    :param city_id:
+    :param supplier_id:
+    :param receiver_lng:
+    :param receiver_lat:
+    :return:
+    """
+    PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
+
+    supplier_id_quantile_dict = load_object(
+        PROJECT_PATH + "/resource_data/supplier_id_quantile_dict.0.pkl")
+    receiver_geohash_quantile_dict = load_object(
+        PROJECT_PATH + "/resource_data/receiver_geohash_quantile_dict.0.pkl")
+
+    supplier_id_quantile = supplier_id_quantile_dict[int(city_id)].get(supplier_id)
+    supplier_time_difficulty = supplier_id_quantile
+
+    receiver_geohash = geohash.encode(receiver_lng, receiver_lat, 7)
+    receiver_geohash_quantile = receiver_geohash_quantile_dict[int(city_id)].get(str(receiver_geohash))
+    receiver_time_difficulty = receiver_geohash_quantile
 
     return supplier_time_difficulty, receiver_time_difficulty
 
@@ -146,3 +209,33 @@ def get_poi_latency_delta(original_latency, dynamic_latency_ratio):
         dynamic_latency_delta = max_latency_delta
 
     return dynamic_latency_delta
+
+
+if __name__ == "__main__":
+    pass
+    # PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
+    # # print PROJECT_PATH
+    #
+    # supplier_id_weight_dict = load_object(
+    #     PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
+    # receiver_geohash_weight_dict = load_object(
+    #     PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
+    #
+    # city_id = 1
+    # supplier_id = 3665730
+    # receiver_lng = 121.426364
+    # receiver_lat = 31.319999
+    #
+    # supplier_id_weight = supplier_id_weight_dict.get(str(supplier_id), 0)
+    # supplier_weight_min = -4.0
+    # supplier_weight_max = 4.0
+    # supplier_time_difficulty = normalize(supplier_id_weight, supplier_weight_min, supplier_weight_max)
+    #
+    # receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
+    # receiver_geohash_weight = receiver_geohash_weight_dict.get(str(receiver_geohash), 0)
+    # receiver_weight_min = -4.0
+    # receiver_weight_max = 4.0
+    # receiver_time_difficulty = normalize(receiver_geohash_weight, receiver_weight_min, receiver_weight_max)
+    #
+    # print supplier_time_difficulty
+    # print receiver_time_difficulty
