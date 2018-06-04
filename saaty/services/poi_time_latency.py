@@ -170,9 +170,7 @@ def get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_l
     """
     # supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
     # receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
-
     supplier_time_difficulty = supplier_id_m3_dict.get(int(city_id), {}).get(int(supplier_id), 0)
-
     receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
     receiver_time_difficulty = receiver_geohash_m3_dict.get(int(city_id), {}).get(str(receiver_geohash), 0)
 
