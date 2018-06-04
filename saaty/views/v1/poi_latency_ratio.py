@@ -56,12 +56,14 @@ class POILatencyRatioView(JsonView):
         dynamic_latency_ratio = 0.0
         dynamic_latency_delta = 0.0
         is_latency_changed = 0
-        ab_test_flag = 'con_101'
+        ab_test_flag = 'con_101_m1'
         control_flag = 1
         latency_config_group = 101
         param_group = {
             'schema': [0, 0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4],
-            'threshold': 0.7
+            'threshold': 0.7,
+            'alpha_1': 0.5,
+            'alpha_2': 0.5
         }
         latency_score = 0.0
         get_difficulty_method = 'm1'
@@ -96,8 +98,10 @@ class POILatencyRatioView(JsonView):
                                                                                                            receiver_lng,
                                                                                                            receiver_lat)
                     elif get_difficulty_method == 'm3':
-                        supplier_time_difficulty, receiver_time_difficulty = 0.0, 0.0
-                        # get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_lat)
+                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m3(city_id,
+                                                                                                           supplier_id,
+                                                                                                           receiver_lng,
+                                                                                                           receiver_lat)
 
                     # 获取策略分组
                     latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})

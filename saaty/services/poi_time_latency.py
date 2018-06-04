@@ -30,8 +30,8 @@ supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id
 receiver_geohash_weight_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
 
 # M3模型专用
-# supplier_id_quantile_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_quantile_dict.0.pkl")
-# receiver_geohash_quantile_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_quantile_dict.0.pkl")
+supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
+receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
 
 
 def read_supplier_time_difficulty(city_id, supplier_id, supplier_lng,
@@ -168,15 +168,13 @@ def get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_l
     :param receiver_lat:
     :return:
     """
+    # supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
+    # receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
 
-    supplier_time_difficulty, receiver_time_difficulty = 0.0, 0.0
+    supplier_time_difficulty = supplier_id_m3_dict.get(int(city_id), {}).get(int(supplier_id), 0)
 
-    # supplier_id_quantile = supplier_id_quantile_dict[int(city_id)].get(supplier_id)
-    # supplier_time_difficulty = supplier_id_quantile
-    #
-    # receiver_geohash = geohash.encode(receiver_lng, receiver_lat, 7)
-    # receiver_geohash_quantile = receiver_geohash_quantile_dict[int(city_id)].get(str(receiver_geohash))
-    # receiver_time_difficulty = receiver_geohash_quantile
+    receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
+    receiver_time_difficulty = receiver_geohash_m3_dict.get(int(city_id), {}).get(str(receiver_geohash), 0)
 
     return supplier_time_difficulty, receiver_time_difficulty
 
@@ -212,6 +210,18 @@ def get_poi_latency_delta(original_latency, dynamic_latency_ratio):
 
 
 if __name__ == "__main__":
+    supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
+    receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
+    city_id = 1
+    supplier_id = 4228855
+    receiver_lng = 121.775007
+    receiver_lat = 31.111312
+    supplier_id_weight = supplier_id_m3_dict.get(int(city_id), {}).get(int(supplier_id), 0)
+    receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
+    receiver_geohash_weight = receiver_geohash_m3_dict.get(int(city_id), {}).get(str(receiver_geohash), 0)
+    print supplier_id_weight
+    print receiver_geohash_weight
+
     pass
     # PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
     # # print PROJECT_PATH
