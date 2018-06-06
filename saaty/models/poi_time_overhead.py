@@ -9,7 +9,7 @@ class POISupplierTimeOverhead(Model):
     """
     取货时间开销 数据库模型
     """
-    __table_name__ = "poi_supplier_time_overhead"
+    __tablename__ = "poi_supplier_time_overhead"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
     __bind_key__ = "saaty"
 
@@ -28,7 +28,7 @@ class POIReceiverTimeOverhead(Model):
     """
     送达时间开销 数据库模型
     """
-    __table_name__ = "poi_receiver_time_overhead"
+    __tablename__ = "poi_receiver_time_overhead"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
     __bind_key__ = "saaty"
 
