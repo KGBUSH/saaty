@@ -20,11 +20,16 @@ def get_config_detail(ab_test_flag):
 
 def get_dynamic_pickup_arrive_config_detail(ab_test_flag):
     items = ab_test_flag.strip().split('_')
+    control_flag = 1
+    pickup_latency_config_group = 100
+    arrive_latency_config_group = 100
+    get_difficulty_method = 'm1'
 
-    control_flag = 1 if items[0] == 'con' else 0
-    pickup_latency_config_group = int(items[1])
-    arrive_latency_config_group = int(items[2])
-    get_difficulty_method = str(items[3])
+    if len(items) > 3:
+        control_flag = 1 if items[0] == 'con' else 0
+        pickup_latency_config_group = int(items[1])
+        arrive_latency_config_group = int(items[2])
+        get_difficulty_method = str(items[3])
 
     return control_flag, pickup_latency_config_group, arrive_latency_config_group, get_difficulty_method
 
