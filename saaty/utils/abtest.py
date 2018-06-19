@@ -7,7 +7,8 @@ from core import app
 
 __all__ = [
     'get_abtest_id',
-    'get_order_ab_test_flag'
+    'get_order_ab_test_flag',
+    'get_dynamic_ab_test_flag'
 ]
 
 
@@ -20,6 +21,23 @@ def get_order_ab_test_flag(order_id, city_id):
         map_id=order_id,
         exp_conf=city_param,
         test_name='saaty_order'
+    )
+
+    if abtest_flag == 0:
+        abtest_flag = 'None_-99'
+
+    return abtest_flag
+
+
+def get_dynamic_ab_test_flag(order_id, city_id):
+    # 所有城市的ab分组流量配置
+    poi_city_param = app.config.get('DYNAMIC_PICKUP_ARRIVE_LATENCY_CITY_AB_TEST', {})
+    city_param = poi_city_param.get(city_id, {})
+
+    abtest_flag = get_abtest_id(
+        map_id=order_id,
+        exp_conf=city_param,
+        test_name='dynamic_pickup_arrive'
     )
 
     if abtest_flag == 0:
