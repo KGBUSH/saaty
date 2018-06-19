@@ -58,7 +58,23 @@ class DynamicPickupArriveLatencyView(JsonView):
             self.update_errors(self.error_messages['args_error'])
             return {}
 
-        # 初始化
+        # 中间变量初始化
+        supplier_time_difficulty = 0.0
+        receiver_time_difficulty = 0.0
+        is_service_open = 0
+        ab_test_flag = 'con_101_m1'
+        control_flag = 1
+        latency_config_group = 101
+        param_group = {
+            'schema': [0, 0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4],
+            'threshold': 0.7
+        }
+        latency_score = 0.0
+        get_difficulty_method = 'm1'
+
+        # 待返回变量初始化
+        is_pickup_latency_changed = 1
+        is_arrive_latency_changed = 1
         dynamic_pickup_latency_ratio = 0.0
         dynamic_pickup_latency_delta = 0.0
         dynamic_arrive_latency_ratio = 0.0
