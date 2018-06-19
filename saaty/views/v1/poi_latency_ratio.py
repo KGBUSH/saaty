@@ -81,7 +81,9 @@ class POILatencyRatioView(JsonView):
 
                 if city_id in enable_city_list:
                     # 获取AB测试分组
-                    ab_test_flag = get_order_ab_test_flag(order_id, city_id)
+                    city_group = 'POI_LATENCY_CITY_AB_TEST'
+                    test_name = 'saaty_order'
+                    ab_test_flag = get_order_ab_test_flag(order_id, city_id, city_group, test_name)
 
                     control_flag, latency_config_group, get_difficulty_method = get_config_detail(ab_test_flag)
 

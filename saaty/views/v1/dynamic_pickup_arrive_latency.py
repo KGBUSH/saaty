@@ -13,7 +13,7 @@ from core import app
 from core import kafkaBizLogger
 from core import sentry
 from saaty.constants import kafka_event
-from saaty.utils.abtest import get_dynamic_ab_test_flag
+from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.utils.config_detail import get_dynamic_pickup_arrive_config_detail
 from saaty.utils.order_category import get_order_category
 from saaty.services.poi_time_latency import get_poi_latency_difficulty_m1
@@ -88,7 +88,9 @@ class DynamicPickupArriveLatencyView(JsonView):
 
                 if 1 == is_vip_assign and city_id in enable_city_list:
                     # 获取AB测试分组
-                    ab_test_flag = get_dynamic_ab_test_flag(order_id, city_id)
+                    city_group = 'DYNAMIC_PICKUP_ARRIVE_LATENCY_CITY_AB_TEST'
+                    test_name = 'dynamic_pickup_arrive'
+                    ab_test_flag = get_order_ab_test_flag(order_id, city_id, city_group, test_name)
 
                     control_flag, pickup_latency_config_group, arrive_latency_config_group, get_difficulty_method = \
                         get_dynamic_pickup_arrive_config_detail(ab_test_flag)
