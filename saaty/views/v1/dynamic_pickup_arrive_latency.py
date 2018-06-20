@@ -73,8 +73,8 @@ class DynamicPickupArriveLatencyView(JsonView):
         get_difficulty_method = 'm1'
 
         # 待返回变量初始化
-        is_pickup_latency_changed = 1
-        is_arrive_latency_changed = 1
+        is_pickup_latency_changed = 0
+        is_arrive_latency_changed = 0
         dynamic_pickup_latency_ratio = 0.0
         dynamic_pickup_latency_delta = 0.0
         dynamic_arrive_latency_ratio = 0.0
