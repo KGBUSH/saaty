@@ -76,9 +76,9 @@ class DynamicPickupArriveLatencyView(JsonView):
         is_pickup_latency_changed = 0
         is_arrive_latency_changed = 0
         dynamic_pickup_latency_ratio = 0.0
-        dynamic_pickup_latency_delta = 0.0
+        dynamic_pickup_latency_delta = 0
         dynamic_arrive_latency_ratio = 0.0
-        dynamic_arrive_latency_delta = 0.0
+        dynamic_arrive_latency_delta = 0
 
         if app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_GLOBAL_SWITCH", 0):
             is_service_open = 1
@@ -130,11 +130,15 @@ class DynamicPickupArriveLatencyView(JsonView):
                     min_pickup_latency_delta = app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_MIN_LATENCY_DELTA", 300)
                     max_pickup_latency_delta = min(app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_MAX_LATENCY_DELTA", 1200),
                                                    original_arrive_latency - original_pickup_latency)
-                    dynamic_pickup_latency_delta = get_latency_delta(original_pickup_latency,
-                                                                     dynamic_pickup_latency_ratio,
-                                                                     latency_step,
-                                                                     min_pickup_latency_delta,
-                                                                     max_pickup_latency_delta)
+                    if max_pickup_latency_delta > min_pickup_latency_delta:
+                        dynamic_pickup_latency_delta = get_latency_delta(original_pickup_latency,
+                                                                         dynamic_pickup_latency_ratio,
+                                                                         latency_step,
+                                                                         min_pickup_latency_delta,
+                                                                         max_pickup_latency_delta)
+                    else:
+                        dynamic_pickup_latency_delta = 0
+
                     dynamic_arrive_latency_delta = 0
             except:
                 sentry.captureException()
