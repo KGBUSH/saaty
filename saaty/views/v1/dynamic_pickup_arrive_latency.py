@@ -19,7 +19,7 @@ from saaty.utils.order_category import get_order_category
 from saaty.services.poi_time_latency import get_poi_latency_difficulty_m1
 from saaty.services.poi_time_latency import get_poi_latency_difficulty_m2
 from saaty.services.poi_time_latency import get_poi_latency_difficulty_m3
-from saaty.services.poi_time_latency import get_poi_latency_delta
+from saaty.services.poi_time_latency import get_latency_delta
 
 
 __all__ = [
@@ -122,14 +122,20 @@ class DynamicPickupArriveLatencyView(JsonView):
                             dynamic_pickup_latency_ratio = pickup_param_group["schema"][int(10 * supplier_time_difficulty)]
                             is_pickup_latency_changed = 1
 
-                        if receiver_time_difficulty >= arrive_param_group.get("threshold", 0):
-                            dynamic_arrive_latency_ratio = arrive_param_group["schema"][int(10 * receiver_time_difficulty)]
-                            is_arrive_latency_changed = 1
+                        dynamic_arrive_latency_ratio = 0.0
+                        is_arrive_latency_changed = 0
 
                     # 将比例转化为固定的时间延迟
-                    dynamic_pickup_latency_delta = get_poi_latency_delta(original_pickup_latency, dynamic_pickup_latency_ratio)
-                    dynamic_arrive_latency_delta = get_poi_latency_delta(original_arrive_latency, dynamic_arrive_latency_ratio)
-
+                    latency_step = 300
+                    min_pickup_latency_delta = app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_MIN_LATENCY_DELTA", 300)
+                    max_pickup_latency_delta = min(app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_MAX_LATENCY_DELTA", 1200),
+                                                   original_arrive_latency - original_pickup_latency)
+                    dynamic_pickup_latency_delta = get_latency_delta(original_pickup_latency,
+                                                                     dynamic_pickup_latency_ratio,
+                                                                     latency_step,
+                                                                     min_pickup_latency_delta,
+                                                                     max_pickup_latency_delta)
+                    dynamic_arrive_latency_delta = 0
             except:
                 sentry.captureException()
 
