@@ -52,7 +52,7 @@ class DynamicPickupArriveLatencyView(JsonView):
             receiver_lat = str(request.args['receiverLat'])
             original_pickup_latency = int(request.args['originalPickUpLatency'])
             original_arrive_latency = int(request.args['originalLatency'])
-            label_ids = str(request.args['lableIDs'])
+            label_ids = str(request.args['labelIDs'])
             is_vip_assign = int(request.args['isVipAssign'])
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
@@ -83,6 +83,8 @@ class DynamicPickupArriveLatencyView(JsonView):
         dynamic_pickup_latency_delta = 0
         dynamic_arrive_latency_ratio = 0.0
         dynamic_arrive_latency_delta = 0
+
+        order_category = get_order_category(label_ids)
 
         if app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_GLOBAL_SWITCH", 0):
             is_vip_latency_service_open = 1
@@ -154,6 +156,7 @@ class DynamicPickupArriveLatencyView(JsonView):
             "is_vip_latency_service_open": is_vip_latency_service_open,
             "order_id": order_id,
             "label_ids": label_ids,
+            "order_category": order_category,
             "city_id": city_id,
             "original_pickup_latency": original_pickup_latency,
             "original_arrive_latency": original_arrive_latency,
