@@ -52,7 +52,7 @@ class DynamicPickupArriveLatencyView(JsonView):
             receiver_lat = str(request.args['receiverLat'])
             original_pickup_latency = int(request.args['originalPickUpLatency'])
             original_arrive_latency = int(request.args['originalLatency'])
-            # transporter_id = int(request.args['transporterId'])
+            label_ids = str(request.args['lableIDs'])
             is_vip_assign = int(request.args['isVipAssign'])
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
@@ -61,15 +61,19 @@ class DynamicPickupArriveLatencyView(JsonView):
         # 中间变量初始化
         supplier_time_difficulty = 0.0
         receiver_time_difficulty = 0.0
-        is_service_open = 0
-        ab_test_flag = 'con_101_m1'
+        is_vip_latency_service_open = 0
+        ab_test_flag = 'con_100_100_m1'
         control_flag = 1
-        latency_config_group = 101
-        param_group = {
-            'schema': [0, 0, 0, 0, 0, 0, 0.1, 0.2, 0.3, 0.4],
+        pickup_latency_config_group = 100
+        arrive_latency_config_group = 100
+        pickup_param_group = {
+            'schema': [0, 0, 0, 0, 0, 0, 0.1, 0.1, 0.1, 0.1],
             'threshold': 0.7
         }
-        latency_score = 0.0
+        arrive_param_group = {
+            'schema': [0, 0, 0, 0, 0, 0, 0.1, 0.1, 0.1, 0.1],
+            'threshold': 0.7
+        }
         get_difficulty_method = 'm1'
 
         # 待返回变量初始化
@@ -81,7 +85,7 @@ class DynamicPickupArriveLatencyView(JsonView):
         dynamic_arrive_latency_delta = 0
 
         if app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_GLOBAL_SWITCH", 0):
-            is_service_open = 1
+            is_vip_latency_service_open = 1
             try:
                 # 获取城市激活列表
                 enable_city_list = app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_CITY_ENABLE_LIST", [])
@@ -142,6 +146,42 @@ class DynamicPickupArriveLatencyView(JsonView):
                     dynamic_arrive_latency_delta = 0
             except:
                 sentry.captureException()
+
+        end_time = time.time()
+
+        info = {
+            "is_vip_assign": is_vip_assign,
+            "is_vip_latency_service_open": is_vip_latency_service_open,
+            "order_id": order_id,
+            "label_ids": label_ids,
+            "city_id": city_id,
+            "original_pickup_latency": original_pickup_latency,
+            "original_arrive_latency": original_arrive_latency,
+            "supplier_id": supplier_id,
+            "supplier_lng": supplier_lng,
+            "supplier_lat": supplier_lat,
+            "receiver_lng": receiver_lng,
+            "receiver_lat": receiver_lat,
+            "dynamic_pickup_latency_ratio": dynamic_arrive_latency_ratio,
+            "dynamic_arrive_latency_ratio": dynamic_arrive_latency_ratio,
+            "dynamic_pickup_latency_delta": dynamic_pickup_latency_delta,
+            "dynamic_arrive_latency_delta": dynamic_arrive_latency_delta,
+            "ab_test_flag": ab_test_flag,
+            "control_flag": control_flag,
+            "pickup_latency_config_group": pickup_latency_config_group,
+            "arrive_latency_config_group": arrive_latency_config_group,
+            "pickup_param_group": pickup_param_group,
+            "arrive_param_group": arrive_param_group,
+            "get_difficulty_method": get_difficulty_method,
+            "supplier_time_difficulty": supplier_time_difficulty,
+            "receiver_time_difficulty": receiver_time_difficulty,
+            "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "is_pickup_latency_changed": is_pickup_latency_changed,
+            "is_arrive_latency_changed": is_arrive_latency_changed,
+            "time_used": round(end_time - start_time, 3)
+        }
+
+        kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
         context = {
             'pickUp': {

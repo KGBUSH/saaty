@@ -16,7 +16,7 @@ from saaty.models.poi_time_difficulty import POISupplierTimeDifficulty
 
 __all__ = [
     'get_poi_latency_score',
-    'get_poi_latency_delta',
+    'get_latency_delta',
     'get_poi_latency_difficulty_m1',
     'get_poi_latency_difficulty_m2',
     'get_poi_latency_difficulty_m3'
