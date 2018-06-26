@@ -14,7 +14,7 @@ from saaty.services.poi_time_latency import get_poi_latency_difficulty_m1
 from saaty.services.poi_time_latency import get_poi_latency_difficulty_m2
 from saaty.services.poi_time_latency import get_poi_latency_difficulty_m3
 from saaty.services.poi_time_latency import get_poi_latency_score
-from saaty.services.poi_time_latency import get_poi_latency_delta
+from saaty.services.poi_time_latency import get_latency_delta
 
 
 __all__ = [
@@ -81,7 +81,9 @@ class POILatencyRatioView(JsonView):
 
                 if city_id in enable_city_list:
                     # 获取AB测试分组
-                    ab_test_flag = get_order_ab_test_flag(order_id, city_id)
+                    city_group = 'POI_LATENCY_CITY_AB_TEST'
+                    test_name = 'saaty_order'
+                    ab_test_flag = get_order_ab_test_flag(order_id, city_id, city_group, test_name)
 
                     control_flag, latency_config_group, get_difficulty_method = get_config_detail(ab_test_flag)
 
@@ -120,7 +122,14 @@ class POILatencyRatioView(JsonView):
                             is_latency_changed = 1
 
                     # 将比例转化为固定的时间延迟
-                    dynamic_latency_delta = get_poi_latency_delta(original_latency, dynamic_latency_ratio)
+                    latency_step = 300
+                    min_latency_delta = 0
+                    max_latency_delta = app.config.get("POI_LATENCY_MAX_LATENCY_DELTA", 2400)
+                    dynamic_latency_delta = get_latency_delta(original_latency,
+                                                              dynamic_latency_ratio,
+                                                              latency_step,
+                                                              min_latency_delta,
+                                                              max_latency_delta)
             except:
                 sentry.captureException()
         else:

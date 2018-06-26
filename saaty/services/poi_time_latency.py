@@ -16,7 +16,7 @@ from saaty.models.poi_time_difficulty import POISupplierTimeDifficulty
 
 __all__ = [
     'get_poi_latency_score',
-    'get_poi_latency_delta',
+    'get_latency_delta',
     'get_poi_latency_difficulty_m1',
     'get_poi_latency_difficulty_m2',
     'get_poi_latency_difficulty_m3'
@@ -192,12 +192,9 @@ def get_poi_latency_score(alpha_1, alpha_2, supplier_time_difficulty,
     return latency_score
 
 
-def get_poi_latency_delta(original_latency, dynamic_latency_ratio):
-    min_latency_delta = 0
-    # 延时上限=40min
-    max_latency_delta = app.config.get("POI_LATENCY_MAX_LATENCY_DELTA", 2400)
-    dynamic_latency_delta = round(
-        (original_latency * dynamic_latency_ratio) / 300) * 300
+def get_latency_delta(original_latency, dynamic_latency_ratio, latency_step=300, min_latency_delta=0, max_latency_delta=2400):
+    dynamic_latency_delta = round((original_latency * dynamic_latency_ratio) / int(latency_step)) \
+                            * int(latency_step)
 
     if dynamic_latency_delta <= min_latency_delta:
         dynamic_latency_delta = min_latency_delta

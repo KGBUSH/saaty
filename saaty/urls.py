@@ -2,6 +2,7 @@
 
 from saaty.views.admin import CheckHealthView
 from saaty.views.v1.poi_latency_ratio import POILatencyRatioView
+from saaty.views.v1.dynamic_pickup_arrive_latency import DynamicPickupArriveLatencyView
 from saaty.views.v1.pickup_time_overhead import PickupTimeOverHeadView
 from saaty.views.v1.receiver_time_overhead import ReceiverTimeOverHeadView
 from saaty.views.job.poi_time_difficulty_update import \
@@ -15,6 +16,9 @@ urls = [
 
     # POI time rank
     ('/v1/poi_time_latency', POILatencyRatioView.as_view('poi_latency')),
+
+    # VIP_ASSIGN dynamic pickup_latency and arrive_latency
+    ('/v1/dynamic_pickup_arrive_latency', DynamicPickupArriveLatencyView.as_view('dynamic_latency')),
 
     # supplier time overhead
     ('/v1/pickup_time_overhead', PickupTimeOverHeadView.as_view('pickup_time')),
