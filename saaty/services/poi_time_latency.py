@@ -38,7 +38,7 @@ receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_g
 def courier_feedback_poi(receiver_lng, receiver_lat):
     receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
     occur_num = courier_feedback_poi_dict.get(str(receiver_geohash), 0)
-    is_courier_feedback_poi = 1 if occur_num >= 1 else 0
+    is_courier_feedback_poi = 1 if occur_num > 0 else 0
 
     return is_courier_feedback_poi
 
@@ -240,9 +240,5 @@ def get_latency_delta(original_latency, dynamic_latency_ratio, latency_step=300,
 
 
 if __name__ == "__main__":
-    receiver_lat = 29.56418
-    receiver_lng = 106.45703
-    is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
-    print "is_courier_feedback_poi: ", is_courier_feedback_poi
 
     pass
