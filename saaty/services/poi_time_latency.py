@@ -17,13 +17,14 @@ from saaty.models.poi_time_difficulty import POISupplierTimeDifficulty
 __all__ = [
     'get_poi_latency_score',
     'get_latency_delta',
-    'get_poi_latency_difficulty_m1',
-    'get_poi_latency_difficulty_m2',
-    'get_poi_latency_difficulty_m3'
+    'get_poi_latency_difficulty'
 ]
 
 # 初始化LR权重模型映射文件
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
+
+# 骑士反馈问题receiver_poi
+courier_feedback_poi_dict = load_object(PROJECT_PATH + "/resource_data/courier_feedback_receiver_geohash.pkl")
 
 # M2模型专用
 supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
@@ -32,6 +33,40 @@ receiver_geohash_weight_dict = load_object(PROJECT_PATH + "/resource_data/receiv
 # M3模型专用
 supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
 receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
+
+
+def courier_feedback_poi(receiver_lng, receiver_lat):
+    receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
+    occur_num = courier_feedback_poi_dict.get(str(receiver_geohash), 0)
+    is_courier_feedback_poi = 1 if occur_num > 1 else 0
+
+    return is_courier_feedback_poi
+
+
+def get_poi_latency_difficulty(city_id, supplier_id, supplier_lng, supplier_lat,
+                               receiver_lng, receiver_lat, get_difficulty_method):
+    supplier_time_difficulty = 0.0
+    receiver_time_difficulty = 0.0
+
+    if get_difficulty_method == 'm1':
+        # 获取延迟时效
+        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m1(city_id,
+                                                                                           supplier_id,
+                                                                                           supplier_lng,
+                                                                                           supplier_lat,
+                                                                                           receiver_lng,
+                                                                                           receiver_lat)
+    elif get_difficulty_method == 'm2':
+        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m2(supplier_id,
+                                                                                           receiver_lng,
+                                                                                           receiver_lat)
+    elif get_difficulty_method == 'm3':
+        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m3(city_id,
+                                                                                           supplier_id,
+                                                                                           receiver_lng,
+                                                                                           receiver_lat)
+
+    return supplier_time_difficulty, receiver_time_difficulty
 
 
 def read_supplier_time_difficulty(city_id, supplier_id, supplier_lng,
@@ -205,42 +240,9 @@ def get_latency_delta(original_latency, dynamic_latency_ratio, latency_step=300,
 
 
 if __name__ == "__main__":
-    supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
-    receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
-    city_id = 1
-    supplier_id = 4228855
-    receiver_lng = 121.775007
-    receiver_lat = 31.111312
-    supplier_id_weight = supplier_id_m3_dict.get(int(city_id), {}).get(int(supplier_id), 0)
-    receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
-    receiver_geohash_weight = receiver_geohash_m3_dict.get(int(city_id), {}).get(str(receiver_geohash), 0)
-    print supplier_id_weight
-    print receiver_geohash_weight
+    receiver_lat = 29.56418
+    receiver_lng = 106.45703
+    is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
+    print "is_courier_feedback_poi: ", is_courier_feedback_poi
 
     pass
-    # PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
-    # # print PROJECT_PATH
-    #
-    # supplier_id_weight_dict = load_object(
-    #     PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
-    # receiver_geohash_weight_dict = load_object(
-    #     PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
-    #
-    # city_id = 1
-    # supplier_id = 3665730
-    # receiver_lng = 121.426364
-    # receiver_lat = 31.319999
-    #
-    # supplier_id_weight = supplier_id_weight_dict.get(str(supplier_id), 0)
-    # supplier_weight_min = -4.0
-    # supplier_weight_max = 4.0
-    # supplier_time_difficulty = normalize(supplier_id_weight, supplier_weight_min, supplier_weight_max)
-    #
-    # receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
-    # receiver_geohash_weight = receiver_geohash_weight_dict.get(str(receiver_geohash), 0)
-    # receiver_weight_min = -4.0
-    # receiver_weight_max = 4.0
-    # receiver_time_difficulty = normalize(receiver_geohash_weight, receiver_weight_min, receiver_weight_max)
-    #
-    # print supplier_time_difficulty
-    # print receiver_time_difficulty
