@@ -16,9 +16,7 @@ from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.utils.config_detail import get_dynamic_pickup_arrive_config_detail
 from saaty.utils.order_category import get_order_category
-from saaty.services.poi_time_latency import get_poi_latency_difficulty_m1
-from saaty.services.poi_time_latency import get_poi_latency_difficulty_m2
-from saaty.services.poi_time_latency import get_poi_latency_difficulty_m3
+from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_latency_delta
 
 
@@ -101,23 +99,14 @@ class DynamicPickupArriveLatencyView(JsonView):
                     control_flag, pickup_latency_config_group, arrive_latency_config_group, get_difficulty_method = \
                         get_dynamic_pickup_arrive_config_detail(ab_test_flag)
 
-                    if get_difficulty_method == 'm1':
-                        # 获取延迟时效
-                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m1(city_id,
-                                                                                                           supplier_id,
-                                                                                                           supplier_lng,
-                                                                                                           supplier_lat,
-                                                                                                           receiver_lng,
-                                                                                                           receiver_lat)
-                    elif get_difficulty_method == 'm2':
-                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m2(supplier_id,
-                                                                                                           receiver_lng,
-                                                                                                           receiver_lat)
-                    elif get_difficulty_method == 'm3':
-                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty_m3(city_id,
-                                                                                                           supplier_id,
-                                                                                                           receiver_lng,
-                                                                                                           receiver_lat)
+                    supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty(city_id,
+                                                                                                    supplier_id,
+                                                                                                    supplier_lng,
+                                                                                                    supplier_lat,
+                                                                                                    receiver_lng,
+                                                                                                    receiver_lat,
+                                                                                                    get_difficulty_method)
+
                     # 获取到店时效、送达时效策略分组
                     latency_schema_group = app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_SCHEMA_GROUP", {})
                     pickup_param_group = latency_schema_group.get(pickup_latency_config_group, {})
