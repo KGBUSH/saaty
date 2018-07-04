@@ -15,7 +15,7 @@ from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.utils.config_detail import get_dynamic_pickup_arrive_config_detail
-from saaty.utils.order_category import get_order_category
+from saaty.utils.order_category import get_order_category, get_vip_label
 from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_latency_delta
 
@@ -51,7 +51,6 @@ class DynamicPickupArriveLatencyView(JsonView):
             original_pickup_latency = int(request.args['originalPickUpLatency'])
             original_arrive_latency = int(request.args['originalLatency'])
             label_ids = str(request.args['labelIDs'])
-            is_vip_assign = int(request.args['isVipAssign'])
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
             return {}
@@ -83,6 +82,7 @@ class DynamicPickupArriveLatencyView(JsonView):
         dynamic_arrive_latency_delta = 0
 
         order_category = get_order_category(label_ids)
+        vip_assign_flag = get_vip_label(label_ids)
 
         if app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_GLOBAL_SWITCH", 0):
             is_vip_latency_service_open = 1
@@ -90,7 +90,7 @@ class DynamicPickupArriveLatencyView(JsonView):
                 # 获取城市激活列表
                 enable_city_list = app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_CITY_ENABLE_LIST", [])
 
-                if 1 == is_vip_assign and city_id in enable_city_list:
+                if 1 == vip_assign_flag and city_id in enable_city_list:
                     # 获取AB测试分组
                     city_group = 'DYNAMIC_PICKUP_ARRIVE_LATENCY_CITY_AB_TEST'
                     test_name = 'dynamic_pickup_arrive'
@@ -141,7 +141,7 @@ class DynamicPickupArriveLatencyView(JsonView):
         end_time = time.time()
 
         info = {
-            "is_vip_assign": is_vip_assign,
+            "vip_assign_flag": vip_assign_flag,
             "is_vip_latency_service_open": is_vip_latency_service_open,
             "order_id": order_id,
             "label_ids": label_ids,
