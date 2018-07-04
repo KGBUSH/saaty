@@ -83,7 +83,7 @@ class DynamicPickupArriveLatencyView(JsonView):
         dynamic_arrive_latency_delta = 0
 
         order_category = get_order_category(label_ids)
-        vip_assign_flag = get_vip_label(label_ids, is_vip_assign)
+        vip_assign_flag = get_vip_label(label_ids)
 
         if app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_GLOBAL_SWITCH", 0):
             is_vip_latency_service_open = 1

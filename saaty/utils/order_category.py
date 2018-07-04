@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
-def get_vip_label(label_list, is_vip_assign):
+def get_vip_label(label_list):
     vip_assign_flag = 0
     label_list = set(label_list.split(","))
 
-    if is_vip_assign:
-        vip_assign_flag = 1
-    elif "287" in label_list:
+    if "287" in label_list:
         vip_assign_flag = 1
 
     return vip_assign_flag
