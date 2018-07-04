@@ -15,7 +15,7 @@ from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.utils.config_detail import get_dynamic_pickup_arrive_config_detail
-from saaty.utils.order_category import get_order_category
+from saaty.utils.order_category import get_order_category, get_vip_label
 from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_latency_delta
 
@@ -83,6 +83,7 @@ class DynamicPickupArriveLatencyView(JsonView):
         dynamic_arrive_latency_delta = 0
 
         order_category = get_order_category(label_ids)
+        is_vip_assign = get_vip_label(label_ids)
 
         if app.config.get("DYNAMIC_PICKUP_ARRIVE_LATENCY_GLOBAL_SWITCH", 0):
             is_vip_latency_service_open = 1
