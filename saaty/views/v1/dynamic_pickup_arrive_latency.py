@@ -51,7 +51,6 @@ class DynamicPickupArriveLatencyView(JsonView):
             original_pickup_latency = int(request.args['originalPickUpLatency'])
             original_arrive_latency = int(request.args['originalLatency'])
             label_ids = str(request.args['labelIDs'])
-            is_vip_assign = int(request.args['isVipAssign'])
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
             return {}
@@ -142,7 +141,6 @@ class DynamicPickupArriveLatencyView(JsonView):
         end_time = time.time()
 
         info = {
-            "is_vip_assign": is_vip_assign,
             "vip_assign_flag": vip_assign_flag,
             "is_vip_latency_service_open": is_vip_latency_service_open,
             "order_id": order_id,
