@@ -9,9 +9,9 @@ try:
 except ImportError:
     pass
 
-APP_ENV = os.getenv('APP_ENV', 'DEV')
+APP_ENV = os.getenv('APP_ENV', 'LOCAL')
 
-if APP_ENV != 'DEV':
+if APP_ENV != 'LOCAL':
     ZK_HOSTS = os.getenv('ZK_HOSTS')
     CFG_SERVICE = True
     CFG_REDIS = os.getenv('CFG_REDIS')
