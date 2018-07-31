@@ -17,6 +17,7 @@ from common.mq.routing_client import RoutingConsumer
 from common.mq.routing_client import RoutingProducer
 from common.config.cfgservice import Cfgservice
 from common.cache.dadacache import DadaCache
+from core.mq.kafka_logger import AlgokafkaLogger
 from core.registry import RegistryService
 from core.registry import DiscoveryService
 from core import config
@@ -100,6 +101,11 @@ sentry = Sentry(app)
 kafkaBizLogger = BizkafkaLogger(
     hosts_list=app.config['KAFKA_HOSTS_LIST'],
     topic_name=app.config['TOPIC_DADA_BIZ_LOG'],
+    app_config=app.config,
+)
+algoKafkaLogger = AlgokafkaLogger(
+    hosts_list=app.config['KAFKA_HOSTS_LIST'],
+    topic_name=app.config['TOPIC_SAATY_BIZ_LOG'],
     app_config=app.config,
 )
 freeKafkaLogger = FreeKafkaLogger(

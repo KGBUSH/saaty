@@ -5,6 +5,7 @@ from flask import request
 from common.framework.views import JsonView
 from core import app
 from core import kafkaBizLogger
+from core import algoKafkaLogger
 from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
@@ -161,6 +162,7 @@ class POILatencyRatioView(JsonView):
         }
 
         kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
+        algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
         if 1 == control_flag:
             dynamic_latency_ratio = 0.0
