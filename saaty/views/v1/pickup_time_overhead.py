@@ -4,6 +4,7 @@ import time
 from core import app
 from core import sentry
 from core import kafkaBizLogger
+from core import algoKafkaLogger
 from common.framework.views import JsonFormView
 from saaty.constants import kafka_event
 from saaty.forms.poi_time_value_form import SupplierPickupTimeForm
@@ -55,6 +56,7 @@ class PickupTimeOverHeadView(JsonFormView):
             "time_used": round(end_time - start_time, 3)
         }
         kafkaBizLogger.info(kafka_event.DYNAMIC_PICKUP_TIME_EVENT, info)
+        algoKafkaLogger.info(kafka_event.DYNAMIC_PICKUP_TIME_EVENT, info)
 
         context = {'pickupTimeList': [
             {'isDowngrade': res_info['isDowngrade'],

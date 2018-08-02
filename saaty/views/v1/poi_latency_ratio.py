@@ -5,6 +5,7 @@ from flask import request
 from common.framework.views import JsonView
 from core import app
 from core import kafkaBizLogger
+from core import algoKafkaLogger
 from core import sentry
 from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
@@ -87,35 +88,34 @@ class POILatencyRatioView(JsonView):
 
                     control_flag, latency_config_group, get_difficulty_method = get_config_detail(ab_test_flag)
 
+                    supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty(city_id,
+                                                                                                    supplier_id,
+                                                                                                    supplier_lng,
+                                                                                                    supplier_lat,
+                                                                                                    receiver_lng,
+                                                                                                    receiver_lat,
+                                                                                                    get_difficulty_method)
+
+                    # 获取策略分组
+                    latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})
+                    param_group = latency_schema_group.get(latency_config_group, {})
+
+                    alpha_1 = param_group.get("alpha_1", 0.5)
+                    alpha_2 = param_group.get("alpha_2", 0.5)
+                    latency_score = get_poi_latency_score(alpha_1,
+                                                          alpha_2,
+                                                          supplier_time_difficulty,
+                                                          receiver_time_difficulty)
+
                     # 骑士反馈的问题poi直接进行延时
                     is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
                     if is_courier_feedback_poi:
                         dynamic_latency_ratio = app.config.get("POI_LATENCY_RATIO_COURIER_FEEDBACK", 0.3)
                         is_latency_changed = 1
-                    else:
-                        supplier_time_difficulty, receiver_time_difficulty = get_poi_latency_difficulty(city_id,
-                                                                                                        supplier_id,
-                                                                                                        supplier_lng,
-                                                                                                        supplier_lat,
-                                                                                                        receiver_lng,
-                                                                                                        receiver_lat,
-                                                                                                        get_difficulty_method)
-
-                        # 获取策略分组
-                        latency_schema_group = app.config.get("POI_LATENCY_SCHEMA_GROUP", {})
-                        param_group = latency_schema_group.get(latency_config_group, {})
-
-                        alpha_1 = param_group.get("alpha_1", 0.5)
-                        alpha_2 = param_group.get("alpha_2", 0.5)
-                        latency_score = get_poi_latency_score(alpha_1,
-                                                              alpha_2,
-                                                              supplier_time_difficulty,
-                                                              receiver_time_difficulty)
-
-                        if latency_schema_group:
-                            if latency_score >= param_group.get("threshold", 0):
-                                dynamic_latency_ratio = param_group["schema"][int(10 * latency_score)]
-                                is_latency_changed = 1
+                    elif latency_schema_group:
+                        if latency_score >= param_group.get("threshold", 0):
+                            dynamic_latency_ratio = param_group["schema"][int(10 * latency_score)]
+                            is_latency_changed = 1
 
                     # 将比例转化为固定的时间延迟
                     latency_step = 300
@@ -162,6 +162,7 @@ class POILatencyRatioView(JsonView):
         }
 
         kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
+        algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
         if 1 == control_flag:
             dynamic_latency_ratio = 0.0

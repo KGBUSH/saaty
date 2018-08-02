@@ -116,7 +116,7 @@ def get_pickup_time_overhead_value_list(req_list=[]):
                         **res_info): res_info for res_info in database_res}
 
                 cache.set_many(need_cache_info,
-                               timeout=cache_expire.CHCHE_EXPIRE_TIME_ONE_WEEK)
+                               timeout=cache_expire.CHCHE_EXPIRE_TIME_SIX)
             except:
                 sentry.captureException()
 
@@ -233,7 +233,7 @@ def get_receiver_time_overhead_value_list(req_list=[]):
                         **res_info): res_info for res_info in database_res}
 
                 cache.set_many(need_cache_info,
-                               timeout=cache_expire.CHCHE_EXPIRE_TIME_ONE_WEEK)
+                               timeout=cache_expire.CHCHE_EXPIRE_TIME_SIX)
             except:
                 sentry.captureException()
 

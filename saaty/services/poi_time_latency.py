@@ -24,7 +24,7 @@ __all__ = [
 PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__file__)), os.pardir))
 
 # 骑士反馈问题receiver_poi
-courier_feedback_poi_dict = load_object(PROJECT_PATH + "/resource_data/courier_feedback_receiver_geohash.pkl")
+courier_feedback_poi_dict = load_object(PROJECT_PATH + "/resource_data/courier_feedback_receiver_8_geohash.pkl")
 
 # M2模型专用
 supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
@@ -36,7 +36,7 @@ receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_g
 
 
 def courier_feedback_poi(receiver_lng, receiver_lat):
-    receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
+    receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 8)
     occur_num = courier_feedback_poi_dict.get(str(receiver_geohash), 0)
     is_courier_feedback_poi = 1 if occur_num >= 1 else 0
 
