@@ -48,6 +48,7 @@ class POILatencyRatioView(JsonView):
             receiver_lng = str(request.args['receiverLng'])
             receiver_lat = str(request.args['receiverLat'])
             label_ids = str(request.args['lableIDs'])
+            heavy_weather_latency = int(request.args.get('heavyWeatherTime', 0))*60
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
             return {}
@@ -140,6 +141,7 @@ class POILatencyRatioView(JsonView):
             "order_category": order_category,
             "city_id": city_id,
             "original_latency": original_latency,
+            "heavy_weather_latency": heavy_weather_latency, 
             "supplier_id": supplier_id,
             "supplier_lng": supplier_lng,
             "supplier_lat": supplier_lat,
