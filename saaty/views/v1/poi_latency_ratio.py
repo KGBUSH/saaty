@@ -48,6 +48,7 @@ class POILatencyRatioView(JsonView):
             receiver_lng = str(request.args['receiverLng'])
             receiver_lat = str(request.args['receiverLat'])
             label_ids = str(request.args['lableIDs'])
+            # 运营在雨天会有额外的延时配置
             heavy_weather_latency = int(request.args.get('heavyWeatherTime', 0))*60
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
@@ -75,8 +76,6 @@ class POILatencyRatioView(JsonView):
         is_heavy_weather_latency = 1 if heavy_weather_latency > 0 else 0
         heavy_weather_latency_ratio = round(float(heavy_weather_latency)/original_latency, 3)
         is_heavy_weather_latency_longer = 0
-        final_latency_ratio = 0.0
-        final_latency_delta = 0
         order_category = get_order_category(label_ids)
 
         if app.config.get("POI_LATENCY_GLOBAL_SWITCH", 0):
@@ -132,16 +131,13 @@ class POILatencyRatioView(JsonView):
                                                               min_latency_delta,
                                                               max_latency_delta)
 
-                    # 运营的雨天溢价，两者中取较大的那一个
                     is_heavy_weather_latency_longer = 1 if heavy_weather_latency_ratio >= dynamic_latency_ratio else 0
                     if is_heavy_weather_latency_longer:
-                        final_latency_ratio = heavy_weather_latency_ratio
-                        final_latency_delta = heavy_weather_latency
+                        # 如果运营的雨天延时较长的话，saaty不再重复延时
                         dynamic_latency_ratio = 0.0
                         dynamic_latency_delta = 0
                     else:
-                        final_latency_ratio = dynamic_latency_ratio
-                        final_latency_delta = dynamic_latency_delta
+                        # 如果运营的雨天延时较短，最终的延时长度为saaty计算出来的延时
                         dynamic_latency_ratio = round(dynamic_latency_ratio - heavy_weather_latency_ratio, 3)
                         dynamic_latency_delta = dynamic_latency_delta - heavy_weather_latency
             except:
@@ -169,8 +165,6 @@ class POILatencyRatioView(JsonView):
             "receiver_lat": receiver_lat,
             "dynamic_latency_ratio": dynamic_latency_ratio,
             "dynamic_latency_delta": dynamic_latency_delta,
-            "final_latency_ratio": final_latency_ratio,
-            "final_latency_delta": final_latency_delta,
             "ab_test_flag": ab_test_flag,
             "control_flag": control_flag,
             "latency_config_group": latency_config_group,
