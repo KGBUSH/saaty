@@ -48,6 +48,7 @@ class POILatencyRatioView(JsonView):
             receiver_lng = str(request.args['receiverLng'])
             receiver_lat = str(request.args['receiverLat'])
             label_ids = str(request.args['lableIDs'])
+            # 运营在雨天会有额外的延时配置
             heavy_weather_latency = int(request.args.get('heavyWeatherTime', 0))*60
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
@@ -72,7 +73,9 @@ class POILatencyRatioView(JsonView):
         supplier_time_difficulty = 0.0
         receiver_time_difficulty = 0.0
         is_service_open = 0
-
+        is_heavy_weather_latency = 1 if heavy_weather_latency > 0 else 0
+        heavy_weather_latency_ratio = round(float(heavy_weather_latency)/original_latency, 3)
+        is_heavy_weather_latency_longer = 0
         order_category = get_order_category(label_ids)
 
         if app.config.get("POI_LATENCY_GLOBAL_SWITCH", 0):
@@ -127,6 +130,16 @@ class POILatencyRatioView(JsonView):
                                                               latency_step,
                                                               min_latency_delta,
                                                               max_latency_delta)
+
+                    is_heavy_weather_latency_longer = 1 if heavy_weather_latency_ratio >= dynamic_latency_ratio else 0
+                    if is_heavy_weather_latency_longer:
+                        # 如果运营的雨天延时较长的话，saaty不再重复延时
+                        dynamic_latency_ratio = 0.0
+                        dynamic_latency_delta = 0
+                    else:
+                        # 如果运营的雨天延时较短，最终的延时长度为saaty计算出来的延时
+                        dynamic_latency_ratio = round(dynamic_latency_ratio - heavy_weather_latency_ratio, 3)
+                        dynamic_latency_delta = dynamic_latency_delta - heavy_weather_latency
             except:
                 sentry.captureException()
         else:
@@ -141,7 +154,10 @@ class POILatencyRatioView(JsonView):
             "order_category": order_category,
             "city_id": city_id,
             "original_latency": original_latency,
-            "heavy_weather_latency": heavy_weather_latency, 
+            "is_heavy_weather_latency": is_heavy_weather_latency,
+            "heavy_weather_latency": heavy_weather_latency,
+            "heavy_weather_latency_ratio": heavy_weather_latency_ratio,
+            "is_heavy_weather_latency_longer": is_heavy_weather_latency_longer,
             "supplier_id": supplier_id,
             "supplier_lng": supplier_lng,
             "supplier_lat": supplier_lat,
@@ -166,6 +182,7 @@ class POILatencyRatioView(JsonView):
         kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
         algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
+        # 对照组实际不延时
         if 1 == control_flag:
             dynamic_latency_ratio = 0.0
             dynamic_latency_delta = 0
