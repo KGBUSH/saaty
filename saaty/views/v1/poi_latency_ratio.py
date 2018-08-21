@@ -15,6 +15,7 @@ from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_poi_latency_score
 from saaty.services.poi_time_latency import get_latency_delta
 from saaty.services.poi_time_latency import courier_feedback_poi
+from saaty.services.rpc_services.delivery_center_rpc_service import get_order_detail_single
 
 
 __all__ = [
@@ -77,6 +78,8 @@ class POILatencyRatioView(JsonView):
         heavy_weather_latency_ratio = round(float(heavy_weather_latency)/original_latency, 3)
         is_heavy_weather_latency_longer = 0
         order_category = get_order_category(label_ids)
+
+        order_detail_info = get_order_detail_single(order_id)
 
         if app.config.get("POI_LATENCY_GLOBAL_SWITCH", 0):
             is_service_open = 1
@@ -176,6 +179,7 @@ class POILatencyRatioView(JsonView):
             "receiver_time_difficulty": receiver_time_difficulty,
             "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "is_latency_changed": is_latency_changed,
+            "order_detail_info": order_detail_info,
             "time_used": round(end_time-start_time, 3)
         }
 

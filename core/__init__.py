@@ -21,10 +21,35 @@ from core.mq.kafka_logger import AlgokafkaLogger
 from core.registry import RegistryService
 from core.registry import DiscoveryService
 from core import config
+from core.config.service_repos import SERVICE_REGISTRY_REPO
+
+
+def get_app_name():
+    return app.config.get('__APP_NAME__', '0')
+
+
+def setup(register_name=None):
+    # register & discovery
+    service_id = registry_service.register(
+        register_name=register_name,
+    )
+    discovery_service.service_id = service_id
+
+    # urlconf
+    root_urlconf = app.config.get('ROOT_URLCONF')
+    if not root_urlconf:
+        return
+    url_module = importlib.import_module(root_urlconf)
+    urls = getattr(url_module, 'urls', [])
+    for url in urls:
+        app.add_url_rule(url[0], view_func=url[-1])
+    return app
+
 
 app = Flask('saaty')
 app.config.from_object(config)
 app.config['__APP_NAME__'] = config.APP_NAME
+
 
 # zookeeper client
 zk_client = KazooClient(
@@ -118,6 +143,11 @@ registry_service = RegistryService(app)
 
 # discovery service
 discovery_service = DiscoveryService(app)
+for _service, _service_method in SERVICE_REGISTRY_REPO.items():
+    discovery_service.update_method_catalog(
+        service=_service,
+        service_method=_service_method,
+    )
 
 if app.config['PROFILE']:
     app.wsgi_app = ProfilerMiddleware(
