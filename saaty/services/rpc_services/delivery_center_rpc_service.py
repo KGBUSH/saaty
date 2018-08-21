@@ -22,7 +22,7 @@ def get_order_detail_single(order_id):
     订单详情单个查询
     接口文档见 http://confluence.corp.imdada.cn/pages/viewpage.action?pageId=7574999
     """
-    params = {
+    query_params = {
         'order_id': order_id
     }
 
@@ -30,11 +30,10 @@ def get_order_detail_single(order_id):
     order_detail = {}
 
     try:
-        result = service_facade.post(
+        result = service_facade.get(
             category=SERVICE_RPC_DELIVERY_CENTER,
             service_name=ORDER_DETAIL_SINGLE,
-            data=json.dumps(params),
-            headers={'Content-Type': 'application/json', },
+            query_params=query_params,
             timeout=_get_delivery_center_timeout(),
         )
 
