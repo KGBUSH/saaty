@@ -79,7 +79,7 @@ class POILatencyRatioView(JsonView):
         is_heavy_weather_latency_longer = 0
         order_category = get_order_category(label_ids)
 
-        order_detail_info = get_order_detail_single(order_id)
+        send_result, order_detail_info = get_order_detail_single(order_id)
 
         if app.config.get("POI_LATENCY_GLOBAL_SWITCH", 0):
             is_service_open = 1
