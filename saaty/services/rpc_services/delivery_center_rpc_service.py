@@ -4,7 +4,6 @@ from core import app
 from core.discovery import service_facade
 from core.config.service_repos import SERVICE_RPC_DELIVERY_CENTER
 from core.config.service_repos import ORDER_DETAIL_SINGLE, ORDER_DETAIL_BATCH
-# from dos.toolbox.utils import send_error_log
 import json
 import math
 
