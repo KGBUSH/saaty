@@ -11,6 +11,7 @@ from saaty.constants import kafka_event
 from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.utils.config_detail import get_config_detail
 from saaty.utils.order_category import get_order_category
+from saaty.utils.address_floor import BuildingRecognizer
 from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_poi_latency_score
 from saaty.services.poi_time_latency import get_latency_delta
@@ -80,6 +81,20 @@ class POILatencyRatioView(JsonView):
         order_category = get_order_category(label_ids)
 
         send_result, order_detail_info = get_order_detail_single(order_id)
+
+        supplier_address = order_detail_info.get("supplierAddress", u"未填写地址")  # <type 'unicode'>
+        supplier_build = BuildingRecognizer()
+        supplier_floor = supplier_build.get_building_floor(supplier_address)
+        receiver_address = order_detail_info.get("receiverAddress", u"未填写地址")  # <type 'unicode'>
+        receiver_build = BuildingRecognizer()
+        receiver_floor = receiver_build.get_building_floor(receiver_address)
+
+        cargo_type = int(order_detail_info.get("cargoType", 0))
+        type_supplier_address = type(supplier_address)
+        type_receiver_address = type(receiver_address)
+        distance = int(order_detail_info.get("distance", 0))
+        block_id = int(order_detail_info.get("blockId", 0))
+        area_id = int(order_detail_info.get("areaId", 0))
 
         if app.config.get("POI_LATENCY_GLOBAL_SWITCH", 0):
             is_service_open = 1
@@ -180,6 +195,14 @@ class POILatencyRatioView(JsonView):
             "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "is_latency_changed": is_latency_changed,
             "order_detail_info": order_detail_info,
+            "supplier_floor": supplier_floor,
+            "receiver_floor": receiver_floor,
+            "cargo_type": cargo_type,
+            "type_supplier_address": type_supplier_address,
+            "type_receiver_address": type_receiver_address,
+            "distance": distance,
+            "block_id": block_id,
+            "area_id": area_id,
             "time_used": round(end_time-start_time, 3)
         }
 
