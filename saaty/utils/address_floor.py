@@ -107,14 +107,19 @@ def cn2dig(matched):
 
 class BuildingRecognizer(object):
     def __init__(self):
-        self.PATTERN_RECOGNIZE = re.compile(ur'\d+楼|\d{3,4}$|\d{3,4}室|\d{3,4}房|\d+层|\d+[A-Za-z]')
+        self.PATTERN_RECOGNIZE_BASEMENT = re.compile(ur'-\d楼|-\d层|-\d[fF]|-\d$|-\d ')
+        self.PATTERN_RECOGNIZE = re.compile(ur'\d+楼|\d{3,4}$|\d{3,4} |\d{3,4}室|\d{3,4}房|\d+层|\d+[fF]')
         self.REPLACE_RECOGNIZE = re.compile(ur'楼|室|层|房|[A-Za-z]')
         self.CHINESE_NUM_RECOGNIZE = re.compile(ur'[一二三四五六七八九十]+')
+        self.MINUS_NUM_RECOGNIZE = re.compile(ur'[Bb负]')
 
-    # 获取floor
     def get_building_floor(self, address):
+        # 将汉语的数字转换成阿拉伯数字
         address = self.CHINESE_NUM_RECOGNIZE.sub(cn2dig, address)
+        address = self.MINUS_NUM_RECOGNIZE.sub('-', address)
+        res_basement = self.PATTERN_RECOGNIZE_BASEMENT.findall(address)
         res = self.PATTERN_RECOGNIZE.findall(address)
+        res = res_basement + res
         if res:
             floor = self.REPLACE_RECOGNIZE.sub("", res[0])
             if len(floor) > 2:
@@ -128,8 +133,8 @@ class BuildingRecognizer(object):
 if __name__ == '__main__':
     # address = u'淮海西路241路近番禺路胸科医院3号楼八楼护士站十五楼'
     # address = u'淮海西路241路近番禺路胸科医院3号楼护士站'
-    address = u'会展时代丽影广场新港中路352号1803'
-    # address = u'前进路与颖河路交叉口东南角负一楼'
+    # address = u'会展时代丽影广场新港中路352号1803'
+    address = u'前进路与颖河路交叉口东南角负一楼'
     # address = u'四川省成都市郫都区郫筒镇望丛中路1092号-1F'
 
     build = BuildingRecognizer()
