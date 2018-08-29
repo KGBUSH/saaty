@@ -90,8 +90,6 @@ class POILatencyRatioView(JsonView):
         receiver_floor = receiver_build.get_building_floor(receiver_address)
 
         cargo_type = int(order_detail_info.get("cargoType", 0))
-        type_supplier_address = type(supplier_address)
-        type_receiver_address = type(receiver_address)
         distance = int(order_detail_info.get("distance", 0))
         block_id = int(order_detail_info.get("blockId", 0))
         area_id = int(order_detail_info.get("areaId", 0))
@@ -195,11 +193,11 @@ class POILatencyRatioView(JsonView):
             "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             "is_latency_changed": is_latency_changed,
             "order_detail_info": order_detail_info,
+            "supplier_address": supplier_address,
             "supplier_floor": supplier_floor,
+            "receiver_address": receiver_address,
             "receiver_floor": receiver_floor,
             "cargo_type": cargo_type,
-            "type_supplier_address": type_supplier_address,
-            "type_receiver_address": type_receiver_address,
             "distance": distance,
             "block_id": block_id,
             "area_id": area_id,
