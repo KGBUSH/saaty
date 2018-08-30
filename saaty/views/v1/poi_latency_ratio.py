@@ -82,12 +82,18 @@ class POILatencyRatioView(JsonView):
 
         send_result, order_detail_info = get_order_detail_single(order_id)
 
+        # 地址和楼层信息
         supplier_address = order_detail_info.get("supplierAddress", u"未填写地址")  # <type 'unicode'>
-        supplier_build = BuildingRecognizer()
-        supplier_floor = supplier_build.get_building_floor(supplier_address)
         receiver_address = order_detail_info.get("receiverAddress", u"未填写地址")  # <type 'unicode'>
-        receiver_build = BuildingRecognizer()
-        receiver_floor = receiver_build.get_building_floor(receiver_address)
+        supplier_floor = 0
+        receiver_floor = 0
+        try:
+            supplier_build = BuildingRecognizer()
+            supplier_floor = supplier_build.get_building_floor(supplier_address)
+            receiver_build = BuildingRecognizer()
+            receiver_floor = receiver_build.get_building_floor(receiver_address)
+        except:
+            pass
 
         cargo_type = int(order_detail_info.get("cargoType", 0))
         distance = int(order_detail_info.get("distance", 0))
