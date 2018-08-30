@@ -107,9 +107,9 @@ def cn2dig(matched):
 
 class BuildingRecognizer(object):
     def __init__(self):
-        self.PATTERN_RECOGNIZE_BASEMENT = re.compile(ur'-\d楼|-\d层|-\d[fF]|-\d$|-\d ')
+        self.PATTERN_RECOGNIZE_BASEMENT = re.compile(ur'-\d楼|-\d层|-\d[fF]')
         self.PATTERN_RECOGNIZE = re.compile(ur'\d+楼|\d{3,4}$|\d{3,4} |\d{3,4}室|\d{3,4}房|\d+层|\d+[fF]')
-        self.REPLACE_RECOGNIZE = re.compile(ur'楼|室|层|房|[A-Za-z]')
+        self.REPLACE_RECOGNIZE = re.compile(ur'楼|室|层|房|[A-Za-z]| ')
         self.CHINESE_NUM_RECOGNIZE = re.compile(ur'[一二三四五六七八九十]+')
         self.MINUS_NUM_RECOGNIZE = re.compile(ur'[Bb负]')
 
