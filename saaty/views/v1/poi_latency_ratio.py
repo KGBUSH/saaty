@@ -17,6 +17,7 @@ from saaty.services.poi_time_latency import get_poi_latency_score
 from saaty.services.poi_time_latency import get_latency_delta
 from saaty.services.poi_time_latency import courier_feedback_poi
 from saaty.services.rpc_services.delivery_center_rpc_service import get_order_detail_single
+from saaty.services.rpc_services.hubble_poi_rpc_service import get_poi_id
 
 
 __all__ = [
@@ -80,9 +81,8 @@ class POILatencyRatioView(JsonView):
         is_heavy_weather_latency_longer = 0
         order_category = get_order_category(label_ids)
 
-        send_result, order_detail_info = get_order_detail_single(order_id)
-
         # 地址和楼层信息
+        send_result, order_detail_info = get_order_detail_single(order_id)
         supplier_address = order_detail_info.get("supplierAddress", u"未填写地址")  # <type 'unicode'>
         receiver_address = order_detail_info.get("receiverAddress", u"未填写地址")  # <type 'unicode'>
         supplier_floor = 0
@@ -94,11 +94,13 @@ class POILatencyRatioView(JsonView):
             receiver_floor = receiver_build.get_building_floor(receiver_address)
         except:
             pass
-
         cargo_type = int(order_detail_info.get("cargoType", 0))
         distance = int(order_detail_info.get("distance", 0))
         block_id = int(order_detail_info.get("blockId", 0))
         area_id = int(order_detail_info.get("areaId", 0))
+
+        req_result_poi, content = get_poi_id(receiver_lat, receiver_lng)
+        receiver_poi_id = content.get("poi_id", 0)
 
         if app.config.get("POI_LATENCY_GLOBAL_SWITCH", 0):
             is_service_open = 1
@@ -185,6 +187,7 @@ class POILatencyRatioView(JsonView):
             "supplier_lat": supplier_lat,
             "receiver_lng": receiver_lng,
             "receiver_lat": receiver_lat,
+            "receiver_poi_id": receiver_poi_id,
             "dynamic_latency_ratio": dynamic_latency_ratio,
             "dynamic_latency_delta": dynamic_latency_delta,
             "ab_test_flag": ab_test_flag,
