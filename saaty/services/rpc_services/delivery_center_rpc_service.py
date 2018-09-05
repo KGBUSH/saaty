@@ -14,7 +14,7 @@ __all__ = [
 
 
 def _get_delivery_center_timeout():
-    return app.config.get('DELIVERY_CENTER_RPC_TIMEOUT', 1)
+    return app.config.get('TIMEOUT_RPC_DELIVERY_CENTER', 1)
 
 
 def get_order_detail_single(order_id):

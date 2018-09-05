@@ -99,7 +99,7 @@ class POILatencyRatioView(JsonView):
         block_id = int(order_detail_info.get("blockId", 0))
         area_id = int(order_detail_info.get("areaId", 0))
 
-        req_result_poi, content = get_poi_id(receiver_lat, receiver_lng)
+        req_result_poi, content = get_poi_id(receiver_lat, receiver_lng, receiver_address)
         receiver_poi_id = content.get("poi_id", 0)
 
         if app.config.get("POI_LATENCY_GLOBAL_SWITCH", 0):
