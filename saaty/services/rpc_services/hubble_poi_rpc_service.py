@@ -12,17 +12,18 @@ __all__ = [
 
 
 def _get_hubble_timeout():
-    return app.config.get('HUBBLE_POI_RPC_TIMEOUT', 1)
+    return app.config.get('TIMEOUT_RPC_HUBBLE_POI', 1)
 
 
-def get_poi_id(lat, lng):
+def get_poi_id(lat, lng, address):
     """
     订单详情单个查询
     接口文档见 http://confluence.corp.imdada.cn/pages/viewpage.action?pageId=8207920
     """
     query_params = {
         'lat': lat,
-        'lng': lng
+        'lng': lng,
+        'address': address
     }
 
     send_result = False
