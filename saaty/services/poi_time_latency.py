@@ -8,7 +8,7 @@ import os
 import geohash
 from core import app
 from core import cache
-from saaty.utils.utils import save_object, load_object, normalize, get_city_poi_white_list
+from saaty.utils.utils import save_object, load_object, normalize, get_feedback_city_poi_list
 from saaty.constants import cache_keys
 from saaty.constants import cache_expire
 from saaty.models.poi_time_difficulty import POIReceiverTimeDifficulty
@@ -30,8 +30,8 @@ courier_feedback_poi_dict = load_object(PROJECT_PATH + "/resource_data/courier_f
 
 # 城市站反馈问题receiver_poi
 FEEDBACK_CITY_LIST = app.config.get('FEEDBACK_CITY_LIST', [])
-FEEDBACK_CITY_POI_ID_DICT = app.config.get("FEEDBACK_CITY_POI_IDS", {})
-FEEDBACK_CITY_POI_ID_LIST = get_city_poi_white_list(FEEDBACK_CITY_POI_ID_DICT)
+FEEDBACK_CITY_POI_NAME_ID_DICT = app.config.get("FEEDBACK_CITY_POI_IDS", {})
+FEEDBACK_CITY_POI_DICT = get_feedback_city_poi_list(FEEDBACK_CITY_POI_NAME_ID_DICT)
 
 # M2模型专用
 supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
@@ -52,8 +52,8 @@ def courier_feedback_poi(receiver_lng, receiver_lat):
 
 def city_station_feedback_poi(city_id, poi_id):
     is_city_station_feedback_poi = 0
-    if city_id in FEEDBACK_CITY_POI_ID_LIST:
-        if poi_id in FEEDBACK_CITY_POI_ID_LIST.get(city_id, []):
+    if city_id in FEEDBACK_CITY_POI_DICT:
+        if poi_id in FEEDBACK_CITY_POI_DICT.get(city_id, []):
             is_city_station_feedback_poi = 1
     return is_city_station_feedback_poi
 
