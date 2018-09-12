@@ -15,7 +15,7 @@ from saaty.utils.address_floor import BuildingRecognizer
 from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_poi_latency_score
 from saaty.services.poi_time_latency import get_latency_delta
-from saaty.services.poi_time_latency import courier_feedback_poi
+from saaty.services.poi_time_latency import courier_feedback_poi, city_station_feedback_poi
 from saaty.services.rpc_services.delivery_center_rpc_service import get_order_detail_single
 from saaty.services.rpc_services.hubble_poi_rpc_service import get_poi_id
 
@@ -137,7 +137,8 @@ class POILatencyRatioView(JsonView):
 
                     # 骑士反馈的问题poi直接进行延时
                     is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
-                    if is_courier_feedback_poi:
+                    is_city_station_feedback_poi = city_station_feedback_poi(city_id, receiver_poi_id)
+                    if is_courier_feedback_poi or is_city_station_feedback_poi:
                         dynamic_latency_ratio = app.config.get("POI_LATENCY_RATIO_COURIER_FEEDBACK", 0.3)
                         is_latency_changed = 1
                     elif latency_schema_group:

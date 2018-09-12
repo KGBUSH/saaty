@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import cPickle as pickle
+from core import app
 
 
 def save_object(obj, file_path):
@@ -28,3 +29,24 @@ def normalize(weight_value, weight_min, weight_max):
         return 0.0
     else:
         return v_normalized
+
+
+def get_city_poi_white_list(feedback_city_poi_id_dict):
+    # list
+    feedback_city_poi_id_list = {}
+
+    for city_id in feedback_city_poi_id_dict:
+        feedback_city_poi_id_list[city_id] = []
+        for poi_name in feedback_city_poi_id_dict[city_id]:
+            feedback_city_poi_id_list[city_id].extend(feedback_city_poi_id_dict[city_id][poi_name])
+
+    return feedback_city_poi_id_list
+
+
+if __name__ == '__main__':
+    # 城市站反馈问题receiver_poi
+    FEEDBACK_CITY_LIST = app.config.get('FEEDBACK_CITY_LIST', [])
+    FEEDBACK_CITY_POI_ID_DICT = app.config.get("FEEDBACK_CITY_POI_IDS", 0.3)
+    FEEDBACK_CITY_POI_ID_LIST = get_city_poi_white_list(FEEDBACK_CITY_POI_ID_DICT)
+    print FEEDBACK_CITY_POI_ID_LIST
+    pass
