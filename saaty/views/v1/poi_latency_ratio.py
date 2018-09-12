@@ -73,6 +73,7 @@ class POILatencyRatioView(JsonView):
         latency_score = 0.0
         get_difficulty_method = 'm1'
         is_courier_feedback_poi = 0
+        is_city_station_feedback_poi = 0
         supplier_time_difficulty = 0.0
         receiver_time_difficulty = 0.0
         is_service_open = 0
@@ -197,6 +198,7 @@ class POILatencyRatioView(JsonView):
             "param_group": param_group,
             "get_difficulty_method": get_difficulty_method,
             "is_courier_feedback_poi": is_courier_feedback_poi,
+            "is_city_station_feedback_poi": is_city_station_feedback_poi,
             "latency_score": latency_score,
             "supplier_time_difficulty": supplier_time_difficulty,
             "receiver_time_difficulty": receiver_time_difficulty,
