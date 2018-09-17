@@ -136,7 +136,7 @@ class POILatencyRatioView(JsonView):
                                                           supplier_time_difficulty,
                                                           receiver_time_difficulty)
 
-                    # 骑士反馈的问题poi直接进行延时
+                    # 骑士、城市站反馈的问题poi直接进行延时
                     is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
                     is_city_station_feedback_poi = city_station_feedback_poi(city_id, receiver_poi_id)
                     if is_courier_feedback_poi or is_city_station_feedback_poi:

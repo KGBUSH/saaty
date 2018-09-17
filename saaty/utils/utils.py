@@ -32,6 +32,11 @@ def normalize(weight_value, weight_min, weight_max):
 
 
 def get_feedback_city_poi_list(feedback_city_poi_id_dict):
+    """将city_id - poi_name - poi_id 的两层dict转换成 city_id - poi_id 的一层dict
+
+    :param feedback_city_poi_id_dict:
+    :return:
+    """
     feedback_city_poi_dict = {}
 
     for city_id in feedback_city_poi_id_dict:

@@ -52,7 +52,7 @@ def courier_feedback_poi(receiver_lng, receiver_lat):
 
 def city_station_feedback_poi(city_id, poi_id):
     is_city_station_feedback_poi = 0
-    if city_id in FEEDBACK_CITY_POI_DICT:
+    if city_id in FEEDBACK_CITY_LIST:
         if poi_id in FEEDBACK_CITY_POI_DICT.get(city_id, []):
             is_city_station_feedback_poi = 1
     return is_city_station_feedback_poi
