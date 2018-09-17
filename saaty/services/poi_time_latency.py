@@ -8,13 +8,15 @@ import os
 import geohash
 from core import app
 from core import cache
-from saaty.utils.utils import save_object, load_object, normalize
+from saaty.utils.utils import save_object, load_object, normalize, get_feedback_city_poi_list
 from saaty.constants import cache_keys
 from saaty.constants import cache_expire
 from saaty.models.poi_time_difficulty import POIReceiverTimeDifficulty
 from saaty.models.poi_time_difficulty import POISupplierTimeDifficulty
 
 __all__ = [
+    'courier_feedback_poi',
+    'city_station_feedback_poi',
     'get_poi_latency_score',
     'get_latency_delta',
     'get_poi_latency_difficulty'
@@ -25,6 +27,11 @@ PROJECT_PATH = os.path.abspath(os.path.join(os.path.abspath(os.path.dirname(__fi
 
 # 骑士反馈问题receiver_poi
 courier_feedback_poi_dict = load_object(PROJECT_PATH + "/resource_data/courier_feedback_receiver_8_geohash.pkl")
+
+# 城市站反馈问题receiver_poi
+FEEDBACK_CITY_LIST = app.config.get('FEEDBACK_CITY_LIST', [])
+FEEDBACK_CITY_POI_NAME_ID_DICT = app.config.get("FEEDBACK_CITY_POI_IDS", {})
+FEEDBACK_CITY_POI_DICT = get_feedback_city_poi_list(FEEDBACK_CITY_POI_NAME_ID_DICT)
 
 # M2模型专用
 supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
@@ -41,6 +48,14 @@ def courier_feedback_poi(receiver_lng, receiver_lat):
     is_courier_feedback_poi = 1 if occur_num >= 1 else 0
 
     return is_courier_feedback_poi
+
+
+def city_station_feedback_poi(city_id, poi_id):
+    is_city_station_feedback_poi = 0
+    if city_id in FEEDBACK_CITY_LIST:
+        if poi_id in FEEDBACK_CITY_POI_DICT.get(city_id, []):
+            is_city_station_feedback_poi = 1
+    return is_city_station_feedback_poi
 
 
 def get_poi_latency_difficulty(city_id, supplier_id, supplier_lng, supplier_lat,
@@ -240,5 +255,11 @@ def get_latency_delta(original_latency, dynamic_latency_ratio, latency_step=300,
 
 
 if __name__ == "__main__":
+    print FEEDBACK_CITY_POI_ID_LIST
+
+    city_id = 1
+    poi_id = u'10412611807490621560'
+    is_city_station_feedback_poi = city_station_feedback_poi(city_id, poi_id)
+    print 'is_city_station_feedback_poi : ', is_city_station_feedback_poi
 
     pass

@@ -15,7 +15,7 @@ from saaty.utils.address_floor import BuildingRecognizer
 from saaty.services.poi_time_latency import get_poi_latency_difficulty
 from saaty.services.poi_time_latency import get_poi_latency_score
 from saaty.services.poi_time_latency import get_latency_delta
-from saaty.services.poi_time_latency import courier_feedback_poi
+from saaty.services.poi_time_latency import courier_feedback_poi, city_station_feedback_poi
 from saaty.services.rpc_services.delivery_center_rpc_service import get_order_detail_single
 from saaty.services.rpc_services.hubble_poi_rpc_service import get_poi_id
 
@@ -73,6 +73,7 @@ class POILatencyRatioView(JsonView):
         latency_score = 0.0
         get_difficulty_method = 'm1'
         is_courier_feedback_poi = 0
+        is_city_station_feedback_poi = 0
         supplier_time_difficulty = 0.0
         receiver_time_difficulty = 0.0
         is_service_open = 0
@@ -135,9 +136,10 @@ class POILatencyRatioView(JsonView):
                                                           supplier_time_difficulty,
                                                           receiver_time_difficulty)
 
-                    # 骑士反馈的问题poi直接进行延时
+                    # 骑士、城市站反馈的问题poi直接进行延时
                     is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
-                    if is_courier_feedback_poi:
+                    is_city_station_feedback_poi = city_station_feedback_poi(city_id, receiver_poi_id)
+                    if is_courier_feedback_poi or is_city_station_feedback_poi:
                         dynamic_latency_ratio = app.config.get("POI_LATENCY_RATIO_COURIER_FEEDBACK", 0.3)
                         is_latency_changed = 1
                     elif latency_schema_group:
@@ -196,6 +198,7 @@ class POILatencyRatioView(JsonView):
             "param_group": param_group,
             "get_difficulty_method": get_difficulty_method,
             "is_courier_feedback_poi": is_courier_feedback_poi,
+            "is_city_station_feedback_poi": is_city_station_feedback_poi,
             "latency_score": latency_score,
             "supplier_time_difficulty": supplier_time_difficulty,
             "receiver_time_difficulty": receiver_time_difficulty,
