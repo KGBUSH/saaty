@@ -66,15 +66,6 @@ class POILatencyRatioView(JsonView):
                 'LatencyDelta': dynamic_latency_delta,
             }
 
-        # 压测开关
-        if app.config.get("TEST_MODE_SWITCH", 0):
-            dynamic_latency_ratio = app.config.get("TEST_DYNAMIC_LATENCY_RATIO", 0.0)
-            dynamic_latency_delta = app.config.get("TEST_DYNAMIC_LATENCY_DELTA", 0)
-            context = {
-                'LatencyRatio': dynamic_latency_ratio,
-                'LatencyDelta': dynamic_latency_delta
-            }
-
         # 2018-11-05 ～ 2018-11-10 进口博览会延时开关
         if app.config.get("IMPORT_EXPO_LUJIAZUI_SWITCH", 0):
             is_lujiazui_import_expo, latency_delta = poi_latency_service.is_lujiazui_import_expo(
@@ -87,8 +78,8 @@ class POILatencyRatioView(JsonView):
             )
             if is_lujiazui_import_expo:
                 context = {
-                    'LatencyRatio': 0.0,
-                    'LatencyDelta': app.config.get("IMPORT_EXPO_LUJIAZUI_LATENCY", 900)
+                    'LatencyRatio': round(latency_delta/original_latency, 2) if original_latency > 0 else 0.0,
+                    'LatencyDelta': latency_delta
                 }
 
         return context
