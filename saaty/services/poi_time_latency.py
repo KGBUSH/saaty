@@ -80,13 +80,13 @@ def is_lujiazui_import_expo(city_id, supplier_lat, supplier_lng, receiver_lat, r
         is_receiver_in_lujiazui = 0
         supplier_zone_name = u''
         receiver_zone_name = u''
-        if supplier_lat and supplier_lat and lujiazui_zones:
+        if supplier_lat and supplier_lng and lujiazui_zones:
             is_supplier_in_lujiazui, supplier_zone_name = lujiazui_zone_hit_detail(
                 supplier_lat,
                 supplier_lng,
                 lujiazui_zones
             )
-        if receiver_lat and receiver_lat and lujiazui_zones:
+        if receiver_lat and receiver_lng and lujiazui_zones:
             is_receiver_in_lujiazui, receiver_zone_name = lujiazui_zone_hit_detail(
                 receiver_lat,
                 receiver_lng,
