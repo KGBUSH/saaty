@@ -26,7 +26,7 @@ class POILatencyRatioView(JsonView):
     def get_context_data(self, **kwargs):
 
         try:
-            order_id = int(request.args['orderId'])
+            order_id = int(request.args.get('orderId', 0))
             original_latency = int(request.args['originalLatency'])
             supplier_id = int(request.args['supplierId'])
             supplier_lng = str(request.args['supplierLng'])
