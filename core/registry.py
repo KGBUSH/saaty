@@ -16,8 +16,8 @@ METHOD_CATALOG = {}
 
 
 def create_consul(app):
-    if app.config['APP_ENV'] in ('LOCAL', 'DEV'):
-        consul = Consul('consul.dev.imdada.cn', 80)
+    if app.config['APP_ENV'] in ('LOCAL', ):
+        consul = Consul('consul.ndev.imdada.cn', 80)
     else:
         consul = Consul()
     return consul
