@@ -43,6 +43,9 @@ SENTRY_DSN = ''
 
 ZK_HOSTS = '10.9.82.249:2181'
 
+LOCAL_CONSUL_HOST = 'consul.ndev.imdada.cn'
+LOCAL_CONSUL_PORT = 80
+
 KAFKA_HOSTS_LIST = '10.9.101.106:9092'
 TOPIC_SAATY_BIZ_LOG = 'topic_saaty'
 TOPIC_DADA_BIZ_LOG = 'topic_dada_biz_log'
