@@ -113,7 +113,7 @@ def is_lujiazui_import_expo(city_id, supplier_lat, supplier_lng, receiver_lat, r
                 "receiver_lat": receiver_lat,
                 "receiver_lng": receiver_lng
             }
-            algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
+            # algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
             algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
     return is_lujiazui, latency_delta
@@ -179,6 +179,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
     is_city_station_feedback_poi = 0
     supplier_time_difficulty = 0.0
     receiver_time_difficulty = 0.0
+    receiver_poi_difficulty_hubble = 0.0
     is_service_open = 0
     is_heavy_weather_latency = 1 if heavy_weather_latency > 0 else 0
     heavy_weather_latency_ratio = round(float(heavy_weather_latency) / original_latency, 3)
@@ -220,6 +221,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
         req_poi_result, poi_content = get_poi_id(receiver_lat, receiver_lng, receiver_address)
         if req_poi_result:
             receiver_poi_id = poi_content.get("poi_id", 0)
+            receiver_poi_difficulty_hubble = poi_content.get('poi_difficulty', 0.0)
 
     is_service_open = 1
     try:
@@ -252,7 +254,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
             latency_score = get_poi_latency_score(alpha_1,
                                                   alpha_2,
                                                   supplier_time_difficulty,
-                                                  receiver_time_difficulty)
+                                                  receiver_poi_difficulty_hubble)
 
             # 骑士、城市站反馈的问题poi直接进行延时
             is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
@@ -319,6 +321,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
         "latency_score": latency_score,
         "supplier_time_difficulty": supplier_time_difficulty,
         "receiver_time_difficulty": receiver_time_difficulty,
+        "receiver_poi_difficulty_hubble": receiver_poi_difficulty_hubble,
         "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         "is_latency_changed": is_latency_changed,
         "order_detail_info": order_detail_info,
@@ -333,7 +336,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
         "time_used": round(end_time - start_time, 3)
     }
     # DYNAMIC_POI_TIME_EVENT
-    kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
+    # kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
     algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
     # 对照组实际不延时

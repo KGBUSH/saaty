@@ -1,6 +1,16 @@
 # -*- coding: utf-8 -*-
 
 
+def get_exclusive_label(label_list):
+    exclusive_assign_label = 0
+    label_list = set(label_list.split(","))
+
+    if "346" in label_list:
+        exclusive_assign_label = 1
+
+    return exclusive_assign_label
+
+
 def get_vip_label(label_list):
     vip_assign_flag = 0
     label_list = set(label_list.split(","))
