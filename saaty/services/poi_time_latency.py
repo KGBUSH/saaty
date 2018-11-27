@@ -344,7 +344,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
         dynamic_latency_ratio = 0.0
         dynamic_latency_delta = 0
 
-    return dynamic_latency_ratio, dynamic_latency_delta
+    return max(dynamic_latency_ratio, 0.0), max(dynamic_latency_delta, 0)
 
 
 def courier_feedback_poi(receiver_lng, receiver_lat):
