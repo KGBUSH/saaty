@@ -42,6 +42,7 @@ courier_feedback_poi_dict = load_object(PROJECT_PATH + "/resource_data/courier_f
 FEEDBACK_CITY_LIST = app.config.get('FEEDBACK_CITY_LIST', [])
 FEEDBACK_CITY_POI_NAME_ID_DICT = app.config.get("FEEDBACK_CITY_POI_IDS", {})
 FEEDBACK_CITY_POI_DICT = get_feedback_city_poi_list(FEEDBACK_CITY_POI_NAME_ID_DICT)
+FEEDBACK_CITY_SUPPLIER_ID_DICT = app.config.get("FEEDBACK_CITY_SUPPLIER_IDS", {})
 
 # M2模型专用
 supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
@@ -177,6 +178,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
     get_difficulty_method = 'm1'
     is_courier_feedback_poi = 0
     is_city_station_feedback_poi = 0
+    is_city_station_feedback_supplier_id = 0
     supplier_time_difficulty = 0.0
     receiver_time_difficulty = 0.0
     receiver_poi_difficulty_hubble = 0.0
@@ -259,7 +261,8 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
             # 骑士、城市站反馈的问题poi直接进行延时
             is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
             is_city_station_feedback_poi = city_station_feedback_poi(city_id, receiver_poi_id)
-            if is_courier_feedback_poi or is_city_station_feedback_poi:
+            is_city_station_feedback_supplier_id = city_station_feedback_supplier_id(city_id, supplier_id)
+            if is_courier_feedback_poi or is_city_station_feedback_poi or is_city_station_feedback_supplier_id:
                 dynamic_latency_ratio = app.config.get("POI_LATENCY_RATIO_COURIER_FEEDBACK", 0.3)
                 is_latency_changed = 1
             elif latency_schema_group:
@@ -277,15 +280,15 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
                                                       min_latency_delta,
                                                       max_latency_delta)
 
-            is_heavy_weather_latency_longer = 1 if heavy_weather_latency_ratio >= dynamic_latency_ratio else 0
+            is_heavy_weather_latency_longer = 1 if heavy_weather_latency >= dynamic_latency_delta else 0
             if is_heavy_weather_latency_longer:
                 # 如果运营的雨天延时较长的话，saaty不再重复延时
                 dynamic_latency_ratio = 0.0
                 dynamic_latency_delta = 0
             else:
                 # 如果运营的雨天延时较短，最终的延时长度为saaty计算出来的延时
-                dynamic_latency_ratio = round(dynamic_latency_ratio - heavy_weather_latency_ratio, 3)
                 dynamic_latency_delta = dynamic_latency_delta - heavy_weather_latency
+                dynamic_latency_ratio = round(float(dynamic_latency_delta)/original_latency, 3) if original_latency > 0 else 0
     except:
         sentry.captureException()
 
@@ -318,6 +321,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
         "get_difficulty_method": get_difficulty_method,
         "is_courier_feedback_poi": is_courier_feedback_poi,
         "is_city_station_feedback_poi": is_city_station_feedback_poi,
+        "is_city_station_feedback_supplier_id": is_city_station_feedback_supplier_id,
         "latency_score": latency_score,
         "supplier_time_difficulty": supplier_time_difficulty,
         "receiver_time_difficulty": receiver_time_difficulty,
@@ -361,6 +365,14 @@ def city_station_feedback_poi(city_id, poi_id):
         if poi_id in FEEDBACK_CITY_POI_DICT.get(city_id, []):
             is_city_station_feedback_poi = 1
     return is_city_station_feedback_poi
+
+
+def city_station_feedback_supplier_id(city_id, supplier_id):
+    is_city_station_feedback_supplier_id = 0
+    if city_id in FEEDBACK_CITY_LIST:
+        if str(supplier_id) in FEEDBACK_CITY_SUPPLIER_ID_DICT.get(city_id, []):
+            is_city_station_feedback_supplier_id = 1
+    return is_city_station_feedback_supplier_id
 
 
 def get_poi_latency_difficulty(city_id, supplier_id, supplier_lng, supplier_lat,
