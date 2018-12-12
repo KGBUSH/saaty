@@ -4,9 +4,7 @@ import sys
 import logging
 import importlib
 from flask import Flask
-from requests import Session
 from redis import Redis
-from requests_futures.sessions import FuturesSession
 from werkzeug.contrib.profiler import ProfilerMiddleware
 from kazoo.client import KazooClient
 from raven.contrib.flask import Sentry
@@ -17,9 +15,11 @@ from common.mq.routing_client import RoutingConsumer
 from common.mq.routing_client import RoutingProducer
 from common.config.cfgservice import Cfgservice
 from common.cache.dadacache import DadaCache
+from common.metric import metric_util
 from core.mq.kafka_logger import AlgokafkaLogger
 from core.registry import RegistryService
 from core.registry import DiscoveryService
+from core.registry import ServiceFacade
 from core import config
 from core.config.service_repos import SERVICE_REGISTRY_REPO
 
@@ -94,13 +94,6 @@ cache = DadaCache(app, config={
     'CACHE_KEY_PREFIX': app.config['CACHE_KEY_PREFIX'],
 })
 
-# http client
-http_pool = Session()
-async_http_pool = FuturesSession(
-    session=http_pool,
-    max_workers=4,
-)
-
 # sentry client
 sentry = Sentry(app)
 
@@ -131,6 +124,15 @@ for _service, _service_method in SERVICE_REGISTRY_REPO.items():
         service_method=_service_method,
     )
 
+# service facade
+service_facade = ServiceFacade(
+    discovery_client=discovery_service,
+    system_name=config.APP_NAME,
+    kafka_logger=freeKafkaLogger,
+    max_workers=10,
+)
+
+
 if app.config['PROFILE']:
     app.wsgi_app = ProfilerMiddleware(
         app=app.wsgi_app,
@@ -153,6 +155,12 @@ def setup(register_name=None):
     urls = getattr(url_module, 'urls', [])
     for url in urls:
         app.add_url_rule(url[0], view_func=url[-1])
+
+    # metrics
+    metric_util.init(
+        app=app,
+        discovery_service=service_facade,
+    )
     return app
 
 

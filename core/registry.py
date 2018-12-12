@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+
+from requests.sessions import Session
+from requests.adapters import HTTPAdapter
+from requests.adapters import DEFAULT_POOLSIZE
 from consul import Consul
+from concurrent.futures import ThreadPoolExecutor
 from common.registry.registry_client import DefaultRegistryClient
 from common.registry.discovery_client import DefaultDiscoveryClient
+from common.registry.service_facade import ServiceFacade as DefaultServiceFacade
 
 
 __all__ = [
     'create_consul',
     'RegistryService',
     'DiscoveryService',
+    'ServiceFacade',
 ]
 
 
@@ -117,3 +125,48 @@ class DiscoveryService(object):
         """
         compat method
         """
+
+
+class _FutureMethod(object):
+
+    def __init__(self, func, executor):
+        self.func = func
+        self.executor = executor
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+    def future(self, *args, **kwargs):
+        return self.executor.submit(self.func, *args, **kwargs)
+
+
+class ServiceFacade(DefaultServiceFacade):
+    """
+    替换 ServiceFacade 部分方法, 使其支持 future 机制.
+    """
+
+    def __init__(self, discovery_client, system_name=None,
+                 kafka_logger=None, **kwargs):
+        # FIXME old-style class __init__
+        DefaultServiceFacade.__init__(
+            self,
+            discovery_client=discovery_client,
+            system_name=system_name,
+            kafka_logger=kafka_logger,
+            http_pool=None,
+        )
+
+        max_workers = kwargs.get('max_workers', 4)
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+
+        http_pool = Session()
+        if max_workers > DEFAULT_POOLSIZE:
+            adapter_kwargs = dict(pool_connections=max_workers,
+                                  pool_maxsize=max_workers)
+            http_pool.mount('https://', HTTPAdapter(**adapter_kwargs))
+            http_pool.mount('http://', HTTPAdapter(**adapter_kwargs))
+        self.http_pool = http_pool
+
+        self.get = _FutureMethod(self.get, self.executor)
+        self.post = _FutureMethod(self.post, self.executor)
+        self.delete = _FutureMethod(self.delete, self.executor)

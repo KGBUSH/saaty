@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from core import app
-from core.discovery import service_facade
+from core import service_facade
 from core.config.service_repos import SERVICE_RPC_HUBBLE_POI
 from core.config.service_repos import LNG_LAT_POI_ID, ADDRESS_POI_ID
 
