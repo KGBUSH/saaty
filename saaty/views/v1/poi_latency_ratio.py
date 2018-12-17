@@ -4,6 +4,8 @@ from flask import request
 from common.framework.views import JsonView
 from core import app
 import saaty.services.poi_time_latency as poi_latency_service
+from core import algoKafkaLogger
+from saaty.constants import kafka_event
 
 
 __all__ = [
@@ -26,8 +28,8 @@ class POILatencyRatioView(JsonView):
     def get_context_data(self, **kwargs):
 
         try:
-            order_id = int(request.args.get('orderId', 0))
-            original_latency = int(request.args['originalLatency'])
+            order_id = int(request.args.get('orderId', 0))  # 不必需
+            original_latency = int(request.args.get('originalLatency', 0))  # 单位：s，不必需
             supplier_id = int(request.args['supplierId'])
             supplier_lng = str(request.args['supplierLng'])
             supplier_lat = str(request.args['supplierLat'])
@@ -36,7 +38,7 @@ class POILatencyRatioView(JsonView):
             receiver_lat = str(request.args['receiverLat'])
             label_ids = str(request.args['lableIDs'])
             # 运营在雨天会有额外的延时配置
-            heavy_weather_latency = int(request.args.get('heavyWeatherTime', 0))*60
+            heavy_weather_latency = int(request.args.get('heavyWeatherTime', 0))*60  # 单位：s，不必需
         except(TypeError, ValueError, KeyError):
             self.update_errors(self.error_messages['args_error'])
             return {}
@@ -66,20 +68,20 @@ class POILatencyRatioView(JsonView):
                 'LatencyDelta': dynamic_latency_delta,
             }
 
-        # 2018-11-05 ～ 2018-11-10 进口博览会延时开关
-        if app.config.get("IMPORT_EXPO_LUJIAZUI_SWITCH", 0):
-            is_lujiazui_import_expo, latency_delta = poi_latency_service.is_lujiazui_import_expo(
-                city_id=city_id,
-                supplier_lat=supplier_lat,
-                supplier_lng=supplier_lng,
-                receiver_lat=receiver_lat,
-                receiver_lng=receiver_lng,
-                order_id=order_id
-            )
-            if is_lujiazui_import_expo:
-                context = {
-                    'LatencyRatio': round(latency_delta/original_latency, 2) if original_latency > 0 else 0.0,
-                    'LatencyDelta': latency_delta
-                }
+        # 接口响应日志
+        request_respons_info = {
+            "order_id": order_id,
+            "original_latency": original_latency,
+            "supplier_id": supplier_id,
+            "supplier_lng": supplier_lng,
+            "supplier_lat": supplier_lat,
+            "city_id": city_id,
+            "receiver_lng": receiver_lng,
+            "receiver_lat": receiver_lat,
+            "label_ids": label_ids,
+            "heavy_weather_latency": heavy_weather_latency,
+            "response_context": context
+        }
+        algoKafkaLogger.info(kafka_event.DYNAMIC_POI_LATENCY_ONLINE_CHECK, request_respons_info)
 
         return context

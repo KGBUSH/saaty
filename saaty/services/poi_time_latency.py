@@ -20,7 +20,6 @@ from saaty.utils.order_category import get_order_category
 from saaty.utils.address_floor import BuildingRecognizer
 from saaty.services.rpc_services.delivery_center_rpc_service import get_order_detail_single
 from saaty.services.rpc_services.hubble_poi_rpc_service import get_poi_id
-from core import kafkaBizLogger
 from core import algoKafkaLogger
 
 from saaty.constants import kafka_event
@@ -28,8 +27,7 @@ from saaty.utils.abtest import get_order_ab_test_flag
 from saaty.utils.config_detail import get_config_detail
 
 __all__ = [
-    'get_poi_latency_view_result',
-    'is_lujiazui_import_expo'
+    'get_poi_latency_view_result'
 ]
 
 # 初始化LR权重模型映射文件
@@ -53,95 +51,9 @@ supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_
 receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
 
 
-def is_lujiazui_import_expo(city_id, supplier_lat, supplier_lng, receiver_lat, receiver_lng, **kwargs):
-    """ 进口博览会期间陆家嘴限行区域重置固定延时
-
-    :param city_id:
-    :param supplier_lat:
-    :param supplier_lng:
-    :param receiver_lat:
-    :param receiver_lng:
-    :param kwargs:
-    :return:
-    """
-    # 传入参数
-    supplier_lat = round(float(supplier_lat), 5)
-    supplier_lng = round(float(supplier_lng), 5)
-    receiver_lat = round(float(receiver_lat), 5)
-    receiver_lng = round(float(receiver_lng), 5)
-    order_id = kwargs.get('order_id', '')
-    # 待返回的变量
-    is_lujiazui = 0
-    latency_delta = 0
-
-    # 上海的陆家嘴限行区域，重置延时策略
-    if 1 == city_id:
-        lujiazui_zones = app.config.get("IMPORT_EXPO_LUJIAZUI_ZONES", {})
-        is_supplier_in_lujiazui = 0
-        is_receiver_in_lujiazui = 0
-        supplier_zone_name = u''
-        receiver_zone_name = u''
-        if supplier_lat and supplier_lng and lujiazui_zones:
-            is_supplier_in_lujiazui, supplier_zone_name = lujiazui_zone_hit_detail(
-                supplier_lat,
-                supplier_lng,
-                lujiazui_zones
-            )
-        if receiver_lat and receiver_lng and lujiazui_zones:
-            is_receiver_in_lujiazui, receiver_zone_name = lujiazui_zone_hit_detail(
-                receiver_lat,
-                receiver_lng,
-                lujiazui_zones
-            )
-
-        if is_supplier_in_lujiazui or is_receiver_in_lujiazui:
-            is_lujiazui = 1
-            latency_delta = app.config.get('IMPORT_EXPO_LUJIAZUI_LATENCY', 0)
-
-        if order_id > 0:
-            info = {
-                "is_lujiazui": is_lujiazui,
-                "comment": u"进口博览会陆家嘴限行区域固定延时",
-                "is_supplier_in_lujiazui": is_supplier_in_lujiazui,
-                "supplier_zone_name": supplier_zone_name,
-                "is_receiver_in_lujiazui": is_receiver_in_lujiazui,
-                "receiver_zone_name": receiver_zone_name,
-                "lujiazui_zones": lujiazui_zones,
-                "order_id": order_id,
-                "city_id": city_id,
-                "supplier_lat": supplier_lat,
-                "supplier_lng": supplier_lng,
-                "receiver_lat": receiver_lat,
-                "receiver_lng": receiver_lng
-            }
-            # algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
-            algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
-
-    return is_lujiazui, latency_delta
-
-
-def lujiazui_zone_hit_detail(lat, lng, zones):
-    is_in_lujiazui = 0
-    zone_name = u''
-    if zones:
-        for zone in zones:
-            min_lat = zones.get(zone).get('min_lat', 31.237)
-            max_lat = zones.get(zone).get('max_lat', 31.237)
-            min_lng = zones.get(zone).get('min_lng', 121.500)
-            max_lng = zones.get(zone).get('max_lng', 121.500)
-            hit_zone_name = zones.get(zone).get('zone_name', u'')
-
-            if (lat >= min_lat) and (lat <= max_lat):
-                if (lng >= min_lng) and (lng <= max_lng):
-                    is_in_lujiazui = 1
-                    zone_name = hit_zone_name
-                    break
-
-    return is_in_lujiazui, zone_name
-
-
 def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng, receiver_lat, receiver_lng, **kwargs):
-    """获取困难POI按倍数延长时效结果
+    """
+    获取困难POI按倍数延长时效结果
 
     :param city_id:
     :param supplier_id:
@@ -154,10 +66,10 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
     """
     start_time = time.time()
     # kwargs
-    original_latency = kwargs.get('original_latency', 0)
     order_id = kwargs.get('order_id', '')
     label_ids = kwargs.get('label_ids')
-    heavy_weather_latency = kwargs.get('heavy_weather_latency')
+    original_latency = kwargs.get('original_latency', 0)
+    heavy_weather_latency = kwargs.get('heavy_weather_latency', 0)
 
     # 待返回变量
     dynamic_latency_ratio = 0.0
@@ -184,7 +96,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
     receiver_poi_difficulty_hubble = 0.0
     is_service_open = 0
     is_heavy_weather_latency = 1 if heavy_weather_latency > 0 else 0
-    heavy_weather_latency_ratio = round(float(heavy_weather_latency) / original_latency, 3)
+    heavy_weather_latency_ratio = 0.0  # 恶劣天气延时倍数
     is_heavy_weather_latency_longer = 0
     order_category = get_order_category(label_ids)
     order_detail_info = u''
@@ -258,7 +170,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
                                                   supplier_time_difficulty,
                                                   receiver_poi_difficulty_hubble)
 
-            # 骑士、城市站反馈的问题poi直接进行延时
+            # 骑士、城市站反馈的问题poi优先计算延时倍数，其他的订单根据配送难度获取延时倍数
             is_courier_feedback_poi = courier_feedback_poi(receiver_lng, receiver_lat)
             is_city_station_feedback_poi = city_station_feedback_poi(city_id, receiver_poi_id)
             is_city_station_feedback_supplier_id = city_station_feedback_supplier_id(city_id, supplier_id)
@@ -270,25 +182,32 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
                     dynamic_latency_ratio = param_group["schema"][int(10 * latency_score)]
                     is_latency_changed = 1
 
-            # 将比例转化为固定的时间延迟
-            latency_step = 300
-            min_latency_delta = 0
-            max_latency_delta = app.config.get("POI_LATENCY_MAX_LATENCY_DELTA", 2400)
-            dynamic_latency_delta = get_latency_delta(original_latency,
-                                                      dynamic_latency_ratio,
-                                                      latency_step,
-                                                      min_latency_delta,
-                                                      max_latency_delta)
+            # 如果原始时效大于0，则根据延时ratio计算具体的延时长度
+            if original_latency > 0:
+                # 将比例转化为固定的时间延迟
+                latency_step = 300
+                min_latency_delta = 0
+                max_latency_delta = app.config.get("POI_LATENCY_MAX_LATENCY_DELTA", 2400)
+                # 计算具体的延时长度
+                dynamic_latency_delta = get_latency_delta(original_latency,
+                                                          dynamic_latency_ratio,
+                                                          latency_step,
+                                                          min_latency_delta,
+                                                          max_latency_delta)
 
-            is_heavy_weather_latency_longer = 1 if heavy_weather_latency >= dynamic_latency_delta else 0
-            if is_heavy_weather_latency_longer:
-                # 如果运营的雨天延时较长的话，saaty不再重复延时
-                dynamic_latency_ratio = 0.0
-                dynamic_latency_delta = 0
-            else:
-                # 如果运营的雨天延时较短，最终的延时长度为saaty计算出来的延时
-                dynamic_latency_delta = dynamic_latency_delta - heavy_weather_latency
-                dynamic_latency_ratio = round(float(dynamic_latency_delta)/original_latency, 3) if original_latency > 0 else 0
+                heavy_weather_latency_ratio = round(float(heavy_weather_latency) / original_latency, 3)
+
+                # 如果恶劣天气延时长度大于0，则根据恶劣天气延时长度对困难poi延时长度进行调整
+                if heavy_weather_latency > 0:
+                    is_heavy_weather_latency_longer = 1 if heavy_weather_latency >= dynamic_latency_delta else 0
+                    if is_heavy_weather_latency_longer:
+                        # 如果运营的雨天延时较长的话，saaty不再重复延时
+                        dynamic_latency_ratio = 0.0
+                        dynamic_latency_delta = 0
+                    else:
+                        # 如果运营的雨天延时较短，最终的延时长度为saaty计算出来的延时
+                        dynamic_latency_delta = dynamic_latency_delta - heavy_weather_latency
+                        dynamic_latency_ratio = round(float(dynamic_latency_delta)/original_latency, 3) if original_latency > 0 else 0
     except:
         sentry.captureException()
 
@@ -339,8 +258,7 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
         "area_id": area_id,
         "time_used": round(end_time - start_time, 3)
     }
-    # DYNAMIC_POI_TIME_EVENT
-    # kafkaBizLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
+    # DYNAMIC_POI_TIME_EVENT = 10386
     algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
 
     # 对照组实际不延时
@@ -405,6 +323,7 @@ def read_supplier_time_difficulty(city_id, supplier_id, supplier_lng,
                                   supplier_lat):
     """
     获取商户取货难度系数，优先使用cache数据
+
     :param city_id:
     :param supplier_id:
     :param supplier_lng:
@@ -442,6 +361,7 @@ def read_supplier_time_difficulty(city_id, supplier_id, supplier_lng,
 def read_poi_receiver_time_difficulty(city_id, receiver_lng, receiver_lat):
     """
     获取POI维度送达时间难度系数，优先使用缓存数据
+
     :param city_id:
     :param receiver_lng:
     :param receiver_lat:
@@ -477,6 +397,7 @@ def read_poi_receiver_time_difficulty(city_id, receiver_lng, receiver_lat):
 def get_poi_latency_difficulty_m1(city_id, supplier_id, supplier_lng, supplier_lat, receiver_lng, receiver_lat):
     """
     获取取货难度系数，送达难度系数
+
     :param city_id:
     :param supplier_id:
     :param supplier_lng:
@@ -504,14 +425,12 @@ def get_poi_latency_difficulty_m1(city_id, supplier_id, supplier_lng, supplier_l
 def get_poi_latency_difficulty_m2(supplier_id, receiver_lng, receiver_lat):
     """
     获取取货难度系数，送达难度系数
+
     :param supplier_id:
     :param receiver_lng:
     :param receiver_lat:
     :return:
     """
-    # supplier_id_weight_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_weight_dict.0.pkl")
-    # receiver_geohash_weight_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_weight_dict.0.pkl")
-
     supplier_id_weight = supplier_id_weight_dict.get(str(supplier_id), 0)
     supplier_weight_min = -4.0
     supplier_weight_max = 4.0
@@ -529,14 +448,13 @@ def get_poi_latency_difficulty_m2(supplier_id, receiver_lng, receiver_lat):
 def get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_lat):
     """
     获取取货难度系数，送达难度系数
+
     :param city_id:
     :param supplier_id:
     :param receiver_lng:
     :param receiver_lat:
     :return:
     """
-    # supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
-    # receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
     supplier_time_difficulty = supplier_id_m3_dict.get(int(city_id), {}).get(int(supplier_id), 0)
     receiver_geohash = geohash.encode(float(receiver_lat), float(receiver_lng), 7)
     receiver_time_difficulty = receiver_geohash_m3_dict.get(int(city_id), {}).get(str(receiver_geohash), 0)
@@ -546,15 +464,13 @@ def get_poi_latency_difficulty_m3(city_id, supplier_id, receiver_lng, receiver_l
 
 def get_poi_latency_score(alpha_1, alpha_2, supplier_time_difficulty,
                           receiver_time_difficulty):
+    # 计算难度系数
     latency_score = 0.0
 
-    # 计算难度系数
-    latency_score = alpha_1 * supplier_time_difficulty + alpha_2 * receiver_time_difficulty
+    if alpha_1 > 0 and (alpha_1 + alpha_2 - 1.0) < 0.0001:
+        latency_score = alpha_1 * supplier_time_difficulty + alpha_2 * receiver_time_difficulty
 
-    if latency_score < 0.0:
-        latency_score = 0.0
-    if latency_score > 1.0:
-        latency_score = 1.0
+    latency_score = max(min(latency_score, 1.0), 0.0)
 
     return latency_score
 
