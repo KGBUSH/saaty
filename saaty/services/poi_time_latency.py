@@ -11,9 +11,9 @@ import geohash
 from core import app
 from core import cache
 from core import sentry
+from common.metric.metric_util import inc as metric_inc
 from saaty.utils.utils import load_object, normalize, get_feedback_city_poi_list
-from saaty.constants import cache_keys
-from saaty.constants import cache_expire
+from saaty.constants import cache_keys, cache_expire, metric_constants
 from saaty.models.poi_time_difficulty import POIReceiverTimeDifficulty
 from saaty.models.poi_time_difficulty import POISupplierTimeDifficulty
 from saaty.utils.order_category import get_order_category
@@ -265,6 +265,29 @@ def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng
     if 1 == control_flag:
         dynamic_latency_ratio = 0.0
         dynamic_latency_delta = 0
+
+    # monitor 新版监控
+    # 查看日志 group by city_id, order_category
+    metric_tags = {
+        'city_id': city_id,
+        'order_category': order_category
+    }
+    # 统计总的请求order_id量
+    key_order_cnt = metric_constants.METRIC_SAATY_DYNAMIC_LATENCY.format(type="order_cnt")
+    metric_inc(key_order_cnt, 1, metric_tags)
+    # 统计总的触发延时的order_id量
+    if dynamic_latency_delta > 0:
+        key_latency_order_cnt = metric_constants.METRIC_SAATY_DYNAMIC_LATENCY.format(type="latency_order_cnt")
+        metric_inc(key_latency_order_cnt, 1, metric_tags)
+    # 统计总的原始时效
+    key_original_latency_sum = metric_constants.METRIC_SAATY_DYNAMIC_LATENCY.format(type="original_latency_sum")
+    metric_inc(key_original_latency_sum, original_latency, metric_tags)
+    # 统计总的原始恶劣天气延时
+    key_heavy_weather_latency_sum = metric_constants.METRIC_SAATY_DYNAMIC_LATENCY.format(type="heavy_weather_latency_sum")
+    metric_inc(key_heavy_weather_latency_sum, heavy_weather_latency, metric_tags)
+    # 统计总的延时倍数
+    key_latency_ratio_sum = metric_constants.METRIC_SAATY_DYNAMIC_LATENCY.format(type="latency_ratio_sum")
+    metric_inc(key_latency_ratio_sum, dynamic_latency_ratio, metric_tags)
 
     return max(dynamic_latency_ratio, 0.0), max(dynamic_latency_delta, 0)
 
