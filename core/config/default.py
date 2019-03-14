@@ -32,12 +32,67 @@ PROFILE = False
 
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 
+SQLALCHEMY_DATABASE_URI = 'mysql://dev_w:6nvjq0_HW@10.9.113.30:3306/saaty_db'
+
 SQLALCHEMY_BINDS = {
-    'saaty': 'mysql://dev_w:6nvjq0_HW@10.9.113.30:3306/saaty_db',
-    'saaty_slave': 'mysql://dev_readonly:6nvjq0_H@10.9.113.30:3306/saaty_db',
+    'saaty_db': 'mysql://dev_w:6nvjq0_HW@10.9.113.30:3306/saaty_db',
+    'saaty_db_slave': 'mysql://dev_readonly:6nvjq0_H@10.9.113.30:3306/saaty_db',
     'dw_api_db': 'mysql://dev_readonly:6nvjq0_H@10.9.113.30:3306/dw_api',
     'dw_api_db_slave': 'mysql://dev_readonly:6nvjq0_H@10.9.113.30:3306/dw_api',
 }
+
+DEFAULT_DATABASE = 'saaty_db'
+
+DADA_DATA_CLIENT_STRATEGY = [
+    {
+        'readOnly': False,
+        'auth': {
+            'username': 'dev_w',
+            'password': '6nvjq0_HW',
+            'schema': 'saaty_db',
+        },
+        'clientName': 'saaty_db',
+        'cloudName': 'mysqldb019',
+    },
+    {
+        'readOnly': True,
+        'auth': {
+            'username': 'dev_r',
+            'password': 'Desx26read66',
+            'schema': 'saaty_db',
+        },
+        'clientName': 'saaty_db_slave',
+        'cloudName': 'mysqldb019',
+        'ha': ['mysqlg019_r1'],
+    },
+    {
+        'readOnly': False,
+        'auth': {
+            'username': 'dev_r',
+            'password': 'Desx26read66',
+            'schema': 'dw_api',
+        },
+        'clientName': 'dw_api_db',
+        'cloudName': 'mysqldb022',
+        'ha': ['mysqlg022_w1'],
+    },
+    {
+        'readOnly': False,
+        'auth': {
+            'username': 'dev_r',
+            'password': 'Desx26read66',
+            'schema': 'dw_api',
+        },
+        'clientName': 'dw_api_db_slave',
+        'cloudName': 'mysqldb022',
+        'ha': ['mysqlg022_w1'],
+    },
+    {
+        'clientName': 'default_redis',
+        'cloudName': 'redisalone045',
+        'clientType': 'standalone',
+    },
+]
 
 SENTRY_DSN = ''
 

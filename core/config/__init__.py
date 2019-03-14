@@ -10,6 +10,7 @@ except ImportError:
     pass
 
 APP_ENV = os.getenv('APP_ENV', 'LOCAL')
+APP_REGISTER_NAME = os.getenv('APP_REGISTER_NAME')
 
 if APP_ENV != 'LOCAL':
     ZK_HOSTS = os.getenv('ZK_HOSTS')

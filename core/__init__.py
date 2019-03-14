@@ -4,7 +4,6 @@ import sys
 import logging
 import importlib
 from flask import Flask
-from redis import Redis
 from werkzeug.contrib.profiler import ProfilerMiddleware
 from kazoo.client import KazooClient
 from raven.contrib.flask import Sentry
@@ -15,8 +14,9 @@ from common.mq.routing_client import RoutingConsumer
 from common.mq.routing_client import RoutingProducer
 from common.config.cfgservice import Cfgservice
 from common.cache.dadacache import DadaCache
+from common.dadadata import data_def
+from common.dadadata import data_context
 from common.metric import metric_util
-from core.mq.kafka_logger import AlgokafkaLogger
 from core.registry import RegistryService
 from core.registry import DiscoveryService
 from core.registry import ServiceFacade
@@ -31,6 +31,7 @@ def get_app_name():
 app = Flask('saaty')
 app.config.from_object(config)
 app.config['__APP_NAME__'] = config.APP_NAME
+register_name = config.APP_REGISTER_NAME or config.APP_NAME
 
 
 # zookeeper client
@@ -55,13 +56,39 @@ config_service = Cfgservice(
 if app.config['CFG_SERVICE']:
     config_service.init()
 
+
+# registry service
+registry_service = RegistryService(app)
+service_id = registry_service.register(
+    register_name=register_name,
+)
+
+
+# discovery service
+discovery_service = DiscoveryService(app, service_id=service_id)
+for _service, _service_method in SERVICE_REGISTRY_REPO.items():
+    discovery_service.update_method_catalog(
+        service=_service,
+        service_method=_service_method,
+    )
+
+
+# dada data client
+data_def.data_client_init(
+    app=app,
+    discovery_service=discovery_service,
+)
+
+
 # database
 db = AutoRouteSQLAlchemy(app)
+
 
 # mq client
 mq_consumer = RoutingConsumer(
     app=app,
     brokers_key='SAATY_ROUTING_CONSUMER_BROKERS',
+    discovery_service=discovery_service,
     cfg_service=config_service,
     system_name=config.APP_NAME,
 )
@@ -69,60 +96,48 @@ mq_consumer = RoutingConsumer(
 mq_producer = RoutingProducer(
     app=app,
     brokers_key='SAATY_ROUTING_PRODUCER_BROKERS',
+    discovery_service=discovery_service,
     cfg_service=config_service,
     system_name=config.APP_NAME,
 )
 mq_producer.start()
 
-# redis
-redis = Redis(
-    host=app.config['REDIS_HOST'],
-    port=app.config['REDIS_PORT'],
-    db=app.config['REDIS_DATABASE_INDEX'],
-    socket_timeout=app.config.get('REDIS_SOCKET_TIMEOUT', 1),
-    retry_on_timeout=True,
-)
 
-# cache
+# redis & cache
+redis = data_context.DataContext.redis_data_clients['default_redis']
 cache = DadaCache(app, config={
     'REDIS_OBJ': redis,
     'CACHE_TYPE': 'redis',
-    'CACHE_REDIS_HOST': '127.0.0.1',
-    'CACHE_REDIS_PORT': '6379',
-    'CACHE_REDIS_DB': 0,
     'CACHE_DEFAULT_TIMEOUT': app.config['REDIS_SOCKET_TIMEOUT'],
     'CACHE_KEY_PREFIX': app.config['CACHE_KEY_PREFIX'],
-})
+}, with_jinja2_ext=False)
+
 
 # sentry client
 sentry = Sentry(app)
+
 
 # kafka logger
 kafkaBizLogger = BizkafkaLogger(
     hosts_list=app.config['KAFKA_HOSTS_LIST'],
     topic_name=app.config['TOPIC_DADA_BIZ_LOG'],
+    log_topic=app.config['TOPIC_DADA_BIZ_LOG'],
     app_config=app.config,
+    discovery_service=discovery_service,
 )
-algoKafkaLogger = AlgokafkaLogger(
+algoKafkaLogger = BizkafkaLogger(
     hosts_list=app.config['KAFKA_HOSTS_LIST'],
     topic_name=app.config['TOPIC_SAATY_BIZ_LOG'],
+    log_topic=app.config['TOPIC_SAATY_BIZ_LOG'],
     app_config=app.config,
+    discovery_service=discovery_service,
 )
 freeKafkaLogger = FreeKafkaLogger(
     hosts_list=app.config['KAFKA_HOSTS_LIST'],
     app_config=app.config,
+    discovery_service=discovery_service,
 )
 
-# registry service
-registry_service = RegistryService(app)
-
-# discovery service
-discovery_service = DiscoveryService(app)
-for _service, _service_method in SERVICE_REGISTRY_REPO.items():
-    discovery_service.update_method_catalog(
-        service=_service,
-        service_method=_service_method,
-    )
 
 # service facade
 service_facade = ServiceFacade(
@@ -140,13 +155,7 @@ if app.config['PROFILE']:
     )
 
 
-def setup(register_name=None):
-    # register & discovery
-    service_id = registry_service.register(
-        register_name=register_name,
-    )
-    discovery_service.service_id = service_id
-
+def setup():
     # urlconf
     root_urlconf = app.config.get('ROOT_URLCONF')
     if not root_urlconf:

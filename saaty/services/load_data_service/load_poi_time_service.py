@@ -1,41 +1,31 @@
 # -*- coding: utf-8 -*-
 
-import urlparse
-import MySQLdb
 import time
-from core import app
+import MySQLdb
+from core import db
 from core import sentry
+
 
 __all__ = [
     "load_poi_time_supplier_data",
     "load_poi_time_receiver_data",
-
 ]
 
-CONN_DICT = dict()
 
-
-def get_conn(conn_str):
-    conn = CONN_DICT.get(conn_str)
-    try:
-        conn.ping()
-    except:
-        url = urlparse.urlparse(conn_str)
-        conn = MySQLdb.connect(host=url.hostname, user=url.username,
-                               passwd=url.password,
-                               db=url.path[1:],
-                               port=url.port if url.port else 3306,
-                               charset='utf8', use_unicode=True)
-        conn.autocommit(False)
-        CONN_DICT[conn_str] = conn
+def _get_conn(bind_key):
+    origin_engine = db.get_engine(bind=bind_key)
+    engine = db.create_engine(origin_engine.url)
+    sqlalchemy_conn = engine.raw_connection()
+    conn = sqlalchemy_conn.connection
+    conn.autocommit(False)
     return conn
 
 
 def load_poi_time_supplier_data(batch_size=2000):
-    conn_get = get_conn(app.config['SQLALCHEMY_BINDS']['dw_api_db'])
+    conn_get = _get_conn('dw_api_db')
     cursor_get = conn_get.cursor(MySQLdb.cursors.SSDictCursor)
 
-    conn_set = get_conn(app.config['SQLALCHEMY_BINDS']['saaty'])
+    conn_set = _get_conn('saaty_db')
     cursor_set = conn_set.cursor()
 
     select_sql = 'select * from poi_supplier_time_difficulty'
@@ -68,10 +58,10 @@ def load_poi_time_supplier_data(batch_size=2000):
 
 
 def load_poi_time_receiver_data(batch_size=5000):
-    conn_get = get_conn(app.config['SQLALCHEMY_BINDS']['dw_api_db'])
+    conn_get = _get_conn('dw_api_db')
     cursor_get = conn_get.cursor(MySQLdb.cursors.SSDictCursor)
 
-    conn_set = get_conn(app.config['SQLALCHEMY_BINDS']['saaty'])
+    conn_set = _get_conn('saaty_db')
     cursor_set = conn_set.cursor()
 
     select_sql = 'select * from poi_receiver_time_difficulty'

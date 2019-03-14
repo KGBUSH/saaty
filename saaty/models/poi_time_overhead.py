@@ -11,7 +11,7 @@ class POISupplierTimeOverhead(Model):
     """
     __tablename__ = "poi_supplier_time_overhead"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
-    __bind_key__ = "saaty"
+    __bind_key__ = "saaty_db"
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)  # 主键ID
     supplier_id = db.Column(db.BigInteger)  # 商户ID
@@ -30,7 +30,7 @@ class POIReceiverTimeOverhead(Model):
     """
     __tablename__ = "poi_receiver_time_overhead"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
-    __bind_key__ = "saaty"
+    __bind_key__ = "saaty_db"
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)  # 主键ID
     receiver_lng = db.Column(db.VARCHAR, index=True, nullable=False)  # 收货地经度

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+import os; os.environ['APP_REGISTER_NAME'] = 'saaty-job-worker'
+
 import core
 from core import mq_consumer
 from job.tasks import tasks
 
-app = core.setup(register_name='saaty-job-worker')
+app = core.setup()
 
 for task in tasks:
     task.consume()

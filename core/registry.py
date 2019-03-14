@@ -93,38 +93,11 @@ class DiscoveryService(object):
         )
         self.service_id = service_id
 
-    def init(self):
-        self.client.init()
-
-    def __del__(self):
-        self.client.close()
-
-    def get_service_endpoint(self, service, method=None, return_host=False, scheme='http'):
-        return self.client.get_service_endpoint(
-            service=service, method=method,
-            return_host=return_host, scheme=scheme,
-        )
-
     def update_method_catalog(self, service, service_method):
         self.method_catalog.update({service: service_method})
 
-    @property
-    def service_id(self):
-        return self.client.service_id
-
-    @service_id.setter
-    def service_id(self, service_id):
-        self.client.service_id = service_id
-
-    def handle_event(self, event):
-        """
-        compat method
-        """
-
-    def get_host_health(self):
-        """
-        compat method
-        """
+    def __getattr__(self, item):
+        return getattr(self.client, item)
 
 
 class _FutureMethod(object):
