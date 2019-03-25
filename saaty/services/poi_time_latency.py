@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf-8 -*-
+# -*- coding:utf-8 -*-
 #
 # Copyright (C) 2018 LIU Yiming <liuyiming@imdada.cn>
 
@@ -49,6 +49,94 @@ receiver_geohash_weight_dict = load_object(PROJECT_PATH + "/resource_data/receiv
 # M3模型专用
 supplier_id_m3_dict = load_object(PROJECT_PATH + "/resource_data/supplier_id_m3_dict.0.pkl")
 receiver_geohash_m3_dict = load_object(PROJECT_PATH + "/resource_data/receiver_geohash_m3_dict.0.pkl")
+
+
+def is_specific_block_latency_dealing(city_id, supplier_lat, supplier_lng, receiver_lat, receiver_lng, **kwargs):
+    """
+    特定限行区域重置固定延时
+
+    :param city_id:
+    :param supplier_lat:
+    :param supplier_lng:
+    :param receiver_lat:
+    :param receiver_lng:
+    :param kwargs:
+    :return:
+    """
+    # 传入参数
+    supplier_lat = round(float(supplier_lat), 5)
+    supplier_lng = round(float(supplier_lng), 5)
+    receiver_lat = round(float(receiver_lat), 5)
+    receiver_lng = round(float(receiver_lng), 5)
+    order_id = kwargs.get('order_id', '')
+    # 待返回的变量
+    is_specific_block = 0
+    latency_delta = 0
+
+    # 特定限行区域，重置延时策略
+    if 1 == city_id:
+        specific_latency_zones = app.config.get("SPECIFIC_LATENCY_ZONES", {})
+        is_supplier_in_specific_latency_zones = 0
+        is_receiver_in_specific_latency_zones = 0
+        supplier_zone_name = u''
+        receiver_zone_name = u''
+        if supplier_lat and supplier_lng and specific_latency_zones:
+            is_supplier_in_specific_latency_zones, supplier_zone_name = specific_latency_zone_hit_detail(
+                supplier_lat,
+                supplier_lng,
+                specific_latency_zones
+            )
+        if receiver_lat and receiver_lng and specific_latency_zones:
+            is_receiver_in_specific_latency_zones, receiver_zone_name = specific_latency_zone_hit_detail(
+                receiver_lat,
+                receiver_lng,
+                specific_latency_zones
+            )
+
+        if is_supplier_in_specific_latency_zones or is_receiver_in_specific_latency_zones:
+            is_specific_block = 1
+            latency_delta = app.config.get('SPECIFIC_BLOCK_LATENCY_TIME', 0)
+
+        if order_id > 0:
+            info = {
+                "is_specific_block": is_specific_block,
+                "comment": u"因特殊活动，指定限行区域固定延时",
+                "is_supplier_in_specific_latency_zones": is_supplier_in_specific_latency_zones,
+                "supplier_zone_name": supplier_zone_name,
+                "is_receiver_in_specific_latency_zones": is_receiver_in_specific_latency_zones,
+                "receiver_zone_name": receiver_zone_name,
+                "specific_latency_zones": specific_latency_zones,
+                "order_id": order_id,
+                "city_id": city_id,
+                "latency_delta": latency_delta,
+                "supplier_lat": supplier_lat,
+                "supplier_lng": supplier_lng,
+                "receiver_lat": receiver_lat,
+                "receiver_lng": receiver_lng
+            }
+            algoKafkaLogger.info(kafka_event.DYNAMIC_POI_TIME_EVENT, info)
+
+    return is_specific_block, latency_delta
+
+
+def specific_latency_zone_hit_detail(lat, lng, zones):
+    is_specific_block = 0
+    zone_name = u''
+    if zones:
+        for zone_id, zone_detail_kv_info in zones.items():
+            min_lat = zone_detail_kv_info.get('min_lat', 31.237)
+            max_lat = zone_detail_kv_info.get('max_lat', 31.237)
+            min_lng = zone_detail_kv_info.get('min_lng', 121.360)
+            max_lng = zone_detail_kv_info.get('max_lng', 121.360)
+            hit_zone_name = zone_detail_kv_info.get('zone_name', u'')
+
+            if (lat >= min_lat) and (lat <= max_lat):
+                if (lng >= min_lng) and (lng <= max_lng):
+                    is_specific_block = 1
+                    zone_name = hit_zone_name
+                    break
+
+    return is_specific_block, zone_name
 
 
 def get_poi_latency_view_result(city_id, supplier_id, supplier_lat, supplier_lng, receiver_lat, receiver_lng, **kwargs):
@@ -512,9 +600,9 @@ def get_latency_delta(original_latency, dynamic_latency_ratio, latency_step=300,
 
 
 if __name__ == "__main__":
-    city_id = 1
-    poi_id = u'10412611807490621560'
-    is_city_station_feedback_poi = city_station_feedback_poi(city_id, poi_id)
-    print 'is_city_station_feedback_poi : ', is_city_station_feedback_poi
-
+    # city_id = 1
+    # poi_id = u'10412611807490621560'
+    # is_city_station_feedback_poi = city_station_feedback_poi(city_id, poi_id)
+    # print 'is_city_station_feedback_poi : ', is_city_station_feedback_poi
+    #
     pass

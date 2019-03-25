@@ -68,6 +68,22 @@ class POILatencyRatioView(JsonView):
                 'LatencyDelta': dynamic_latency_delta,
             }
 
+        # 指定区域延时开关
+        if app.config.get("SPECIFIC_BLOCK_LATENCY_SWITCH", 0):
+            is_specific_block_latency, latency_delta = poi_latency_service.is_specific_block_latency_dealing(
+                city_id=city_id,
+                supplier_lat=supplier_lat,
+                supplier_lng=supplier_lng,
+                receiver_lat=receiver_lat,
+                receiver_lng=receiver_lng,
+                order_id=order_id
+            )
+            if is_specific_block_latency:
+                context = {
+                    'LatencyRatio': round(float(latency_delta)/original_latency, 2) if original_latency > 0 else 0.0,
+                    'LatencyDelta': app.config.get("SPECIFIC_BLOCK_LATENCY_TIME", 600)
+                }
+
         # 接口响应日志
         request_respons_info = {
             "order_id": order_id,
