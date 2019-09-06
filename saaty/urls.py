@@ -9,6 +9,7 @@ from saaty.views.job.poi_time_difficulty_update import \
     POITimeSupplierDifficultyUpdateJob, POITimeReceiverDifficultyUpdateJob
 from saaty.views.job.poi_time_cost_update import \
     POITimeReceiverTimeCostUpdateJob, POITimeSupplierPickupTimeCostUpdateJob
+from saaty.views.job.artificial_address_update import ArtificialAddressInfoUpdateJob
 
 urls = [
     # ADMIN
@@ -47,4 +48,8 @@ urls.extend([
      POITimeSupplierPickupTimeCostUpdateJob.as_view(
          'job_update_poi_pickup_time_cost_data')),
 
+    # 更新人工困难地址
+    ('/job/update_artificial_address_data',
+     ArtificialAddressInfoUpdateJob.as_view(
+         'job_update_artificial_address_data')),
 ])

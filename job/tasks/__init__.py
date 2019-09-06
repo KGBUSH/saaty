@@ -2,6 +2,7 @@
 
 from job.tasks import poi_time_difficulty_update_task
 from job.tasks import poi_time_cost_update_task
+from job.tasks import artificial_address_update_task
 
 
 tasks = [
@@ -15,6 +16,9 @@ tasks = [
     poi_time_cost_update_task.update_receiver_time_cost_data,
 
     # job_update_poi_pickup_time_cost_data
-    poi_time_cost_update_task.update_poi_pickup_time_cost_data
+    poi_time_cost_update_task.update_poi_pickup_time_cost_data,
+
+    # job_update_artificial_address_data 
+    artificial_address_update_task.update_artificial_address_data,
 
 ]

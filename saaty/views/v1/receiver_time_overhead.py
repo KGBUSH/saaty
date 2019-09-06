@@ -39,13 +39,8 @@ class ReceiverTimeOverHeadView(JsonFormView):
             self.update_errors(self.error_messages['args_error_overflow'])
             return self.render_to_response()
 
-        res_receiver_time_list = []
-
-        try:
-            res_receiver_time_list = get_receiver_time_overhead_value_list(
-                receiver_info_list)
-        except:
-            sentry.captureException()
+        res_receiver_time_list = get_receiver_time_overhead_value_list(
+            receiver_info_list)
 
         end_time = time.time()
         info = {

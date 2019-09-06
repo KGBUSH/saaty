@@ -18,3 +18,7 @@ SUPPLIER_TIME_DIFFICULTY = 'supplier_time_difficulty_{supplier_id}_' \
 # POI 送达难度系数
 RECEIVER_TIME_DIFFICULTY = 'receiver_time_difficulty_{receiver_lng}_' \
                            '{receiver_lat}_{city_id}'
+
+# 人工收录地址查询
+CACHE_KEY_ARTIFICIAL_GEOHASH_KEY = 'saaty_cache_key_artificial_geohash_key_{' \
+                                   'geohash_info}'

@@ -6,6 +6,20 @@ from core import db
 from core.models import Model
 
 
+class GeohashArtificialDifficultAddress(Model):
+    __tablename__ = "artificial_difficult_address"
+    __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}
+    __bind_key__ = "saaty_db"
+    id = db.Column(db.Integer, primary_key=True, nullable=False)  # 主键ID
+    lng = db.Column(db.VARCHAR, index=True, nullable=False)  #
+    lat = db.Column(db.VARCHAR, index=True, nullable=False)  #
+    address = db.Column(db.VARCHAR, index=True, nullable=False)  # 地址描述
+    geohash = db.Column(db.VARCHAR, index=True, nullable=False)
+    create_time = db.Column(db.TIMESTAMP)  # 创建时间
+    update_time = db.Column(db.TIMESTAMP)  # 更新时间
+    is_del = db.Column(db.Integer)  # 1 表示删除
+
+
 class POISupplierTimeDifficulty(Model):
     __tablename__ = "poi_supplier_time_difficulty"
     __table_args__ = {"mysql_engine": "InnoDB", "mysql_charset": "utf8"}

@@ -134,3 +134,283 @@ RABBIT_REDIS_HOST = ''
 RABBIT_REDIS_PORT = 0
 
 MQ_CURRENT_ENVIRONMENT = 'dev'
+
+POI_TIME_OVERHEAD_DEFAULT_VALUE_DEFAULT_CITY = {
+  'pickup_time': 83,
+  'pickup_rank': 0.5,
+  'receiver_time': 116,
+  'receiver_rank': 0.5
+}
+
+POI_TIME_OVERHEAD_DEFAULT_VALUE = {
+  '1': {
+    'pickup_time': 83,
+    'pickup_rank': 0.5,
+    'receiver_time': 116,
+    'receiver_rank': 0.5
+  },
+  '2': {
+    'pickup_time': 126,
+    'pickup_rank': 0.5,
+    'receiver_time': 151,
+    'receiver_rank': 0.5
+  },
+  '3': {
+    'pickup_time': 99,
+    'pickup_rank': 0.5,
+    'receiver_time': 143,
+    'receiver_rank': 0.5
+  },
+  '4': {
+    'pickup_time': 95,
+    'pickup_rank': 0.5,
+    'receiver_time': 133,
+    'receiver_rank': 0.5
+  },
+  '5': {
+    'pickup_time': 95,
+    'pickup_rank': 0.5,
+    'receiver_time': 123,
+    'receiver_rank': 0.5
+  },
+  '6': {
+    'pickup_time': 91,
+    'pickup_rank': 0.5,
+    'receiver_time': 157,
+    'receiver_rank': 0.5
+  },
+  '7': {
+    'pickup_time': 121,
+    'pickup_rank': 0.5,
+    'receiver_time': 136,
+    'receiver_rank': 0.5
+  },
+  '8': {
+    'pickup_time': 82,
+    'pickup_rank': 0.5,
+    'receiver_time': 124,
+    'receiver_rank': 0.5
+  },
+  '9': {
+    'pickup_time': 91,
+    'pickup_rank': 0.5,
+    'receiver_time': 134,
+    'receiver_rank': 0.5
+  },
+  '10': {
+    'pickup_time': 105,
+    'pickup_rank': 0.5,
+    'receiver_time': 164,
+    'receiver_rank': 0.5
+  },
+  '11': {
+    'pickup_time': 92,
+    'pickup_rank': 0.5,
+    'receiver_time': 150,
+    'receiver_rank': 0.5
+  },
+  '12': {
+    'pickup_time': 108,
+    'pickup_rank': 0.5,
+    'receiver_time': 188,
+    'receiver_rank': 0.5
+  },
+  '13': {
+    'pickup_time': 111,
+    'pickup_rank': 0.5,
+    'receiver_time': 172,
+    'receiver_rank': 0.5
+  },
+  '14': {
+    'pickup_time': 105,
+    'pickup_rank': 0.5,
+    'receiver_time': 183,
+    'receiver_rank': 0.5
+  },
+  '15': {
+    'pickup_time': 83,
+    'pickup_rank': 0.5,
+    'receiver_time': 124,
+    'receiver_rank': 0.5
+  },
+  '16': {
+    'pickup_time': 87,
+    'pickup_rank': 0.5,
+    'receiver_time': 141,
+    'receiver_rank': 0.5
+  },
+  '17': {
+    'pickup_time': 87,
+    'pickup_rank': 0.5,
+    'receiver_time': 142,
+    'receiver_rank': 0.5
+  },
+  '18': {
+    'pickup_time': 75,
+    'pickup_rank': 0.5,
+    'receiver_time': 133,
+    'receiver_rank': 0.5
+  },
+  '19': {
+    'pickup_time': 76,
+    'pickup_rank': 0.5,
+    'receiver_time': 124,
+    'receiver_rank': 0.5
+  },
+  '21': {
+    'pickup_time': 73,
+    'pickup_rank': 0.5,
+    'receiver_time': 110,
+    'receiver_rank': 0.5
+  },
+  '22': {
+    'pickup_time': 91,
+    'pickup_rank': 0.5,
+    'receiver_time': 130,
+    'receiver_rank': 0.5
+  },
+  '23': {
+    'pickup_time': 152,
+    'pickup_rank': 0.5,
+    'receiver_time': 173,
+    'receiver_rank': 0.5
+  },
+  '24': {
+    'pickup_time': 130,
+    'pickup_rank': 0.5,
+    'receiver_time': 195,
+    'receiver_rank': 0.5
+  },
+  '25': {
+    'pickup_time': 76,
+    'pickup_rank': 0.5,
+    'receiver_time': 126,
+    'receiver_rank': 0.5
+  },
+  '26': {
+    'pickup_time': 72,
+    'pickup_rank': 0.5,
+    'receiver_time': 137,
+    'receiver_rank': 0.5
+  },
+  '27': {
+    'pickup_time': 77,
+    'pickup_rank': 0.5,
+    'receiver_time': 128,
+    'receiver_rank': 0.5
+  },
+  '28': {
+    'pickup_time': 83,
+    'pickup_rank': 0.5,
+    'receiver_time': 122,
+    'receiver_rank': 0.5
+  },
+  '29': {
+    'pickup_time': 102,
+    'pickup_rank': 0.5,
+    'receiver_time': 153,
+    'receiver_rank': 0.5
+  },
+  '30': {
+    'pickup_time': 116,
+    'pickup_rank': 0.5,
+    'receiver_time': 145,
+    'receiver_rank': 0.5
+  },
+  '31': {
+    'pickup_time': 78,
+    'pickup_rank': 0.5,
+    'receiver_time': 138,
+    'receiver_rank': 0.5
+  },
+  '32': {
+    'pickup_time': 77,
+    'pickup_rank': 0.5,
+    'receiver_time': 127,
+    'receiver_rank': 0.5
+  },
+  '35': {
+    'pickup_time': 69,
+    'pickup_rank': 0.5,
+    'receiver_time': 121,
+    'receiver_rank': 0.5
+  },
+  '36': {
+    'pickup_time': 75,
+    'pickup_rank': 0.5,
+    'receiver_time': 123,
+    'receiver_rank': 0.5
+  },
+  '37': {
+    'pickup_time': 93,
+    'pickup_rank': 0.5,
+    'receiver_time': 128,
+    'receiver_rank': 0.5
+  },
+  '38': {
+    'pickup_time': 99,
+    'pickup_rank': 0.5,
+    'receiver_time': 155,
+    'receiver_rank': 0.5
+  },
+  '39': {
+    'pickup_time': 91,
+    'pickup_rank': 0.5,
+    'receiver_time': 152,
+    'receiver_rank': 0.5
+  },
+  '40': {
+    'pickup_time': 78,
+    'pickup_rank': 0.5,
+    'receiver_time': 125,
+    'receiver_rank': 0.5
+  },
+  '66': {
+    'pickup_time': 71,
+    'pickup_rank': 0.5,
+    'receiver_time': 72,
+    'receiver_rank': 0.5
+  },
+  '76': {
+    'pickup_time': 141,
+    'pickup_rank': 0.5,
+    'receiver_time': 223,
+    'receiver_rank': 0.5
+  },
+  '77': {
+    'pickup_time': 147,
+    'pickup_rank': 0.5,
+    'receiver_time': 199,
+    'receiver_rank': 0.5
+  },
+  '116': {
+    'pickup_time': 102,
+    'pickup_rank': 0.5,
+    'receiver_time': 128,
+    'receiver_rank': 0.5
+  },
+  '135': {
+    'pickup_time': 135,
+    'pickup_rank': 0.5,
+    'receiver_time': 175,
+    'receiver_rank': 0.5
+  },
+  '180': {
+    'pickup_time': 94,
+    'pickup_rank': 0.5,
+    'receiver_time': 127,
+    'receiver_rank': 0.5
+  },
+  '357': {
+    'pickup_time': 88,
+    'pickup_rank': 0.5,
+    'receiver_time': 110,
+    'receiver_rank': 0.5
+  },
+  '358': {
+    'pickup_time': 63,
+    'pickup_rank': 0.5,
+    'receiver_time': 107,
+    'receiver_rank': 0.5
+  }
+}
