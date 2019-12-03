@@ -5,11 +5,13 @@ from saaty.views.v1.poi_latency_ratio import POILatencyRatioView
 from saaty.views.v1.dynamic_pickup_arrive_latency import DynamicPickupArriveLatencyView
 from saaty.views.v1.pickup_time_overhead import PickupTimeOverHeadView
 from saaty.views.v1.receiver_time_overhead import ReceiverTimeOverHeadView
+from saaty.views.v1.eta_A_overhead import EtaAOverHeadView, EtaABatchOverHeadView
 from saaty.views.job.poi_time_difficulty_update import \
     POITimeSupplierDifficultyUpdateJob, POITimeReceiverDifficultyUpdateJob
 from saaty.views.job.poi_time_cost_update import \
     POITimeReceiverTimeCostUpdateJob, POITimeSupplierPickupTimeCostUpdateJob
 from saaty.views.job.artificial_address_update import ArtificialAddressInfoUpdateJob
+from saaty.views.job.eta_history_data_update import ETASupplierHistoryUpdateJob,ETATransporterHistoryUpdateJob
 
 urls = [
     # ADMIN
@@ -26,7 +28,15 @@ urls = [
 
     # receiver time overhead
     ('/v1/receiver_time_overhead', ReceiverTimeOverHeadView.as_view(
-        'receiver_time'))
+        'receiver_time')),
+
+    # eta: accept_to_pickup time (total A) overhead
+    ('/v1/eta/accept_to_pickup', EtaAOverHeadView.as_view('eta_a_time_overhead')),
+
+    # eta: accept_to_pickup time (total A) overhead
+    ('/v1/eta/accept_to_pickup_batch', EtaABatchOverHeadView.as_view('eta_a_time_batch_overhead'))
+
+
 ]
 
 # JOBS
@@ -52,4 +62,12 @@ urls.extend([
     ('/job/update_artificial_address_data',
      ArtificialAddressInfoUpdateJob.as_view(
          'job_update_artificial_address_data')),
+
+    # ETA: update supplier history info
+    ('/job/update_supplier_history_data', ETASupplierHistoryUpdateJob
+     .as_view('job_update_eta_supplier_history_data')),
+
+    # ETA: update transporter history info
+    ('/job/update_transporter_history_data', ETATransporterHistoryUpdateJob
+     .as_view('job_update_eta_transporter_history_data')),
 ])
