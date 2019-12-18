@@ -6,12 +6,14 @@ from saaty.views.v1.dynamic_pickup_arrive_latency import DynamicPickupArriveLate
 from saaty.views.v1.pickup_time_overhead import PickupTimeOverHeadView
 from saaty.views.v1.receiver_time_overhead import ReceiverTimeOverHeadView
 from saaty.views.v1.eta_A_overhead import EtaAOverHeadView, EtaABatchOverHeadView
+from saaty.views.v1.eta_C_overhead import EtaCOverHeadView
 from saaty.views.job.poi_time_difficulty_update import \
     POITimeSupplierDifficultyUpdateJob, POITimeReceiverDifficultyUpdateJob
 from saaty.views.job.poi_time_cost_update import \
     POITimeReceiverTimeCostUpdateJob, POITimeSupplierPickupTimeCostUpdateJob
 from saaty.views.job.artificial_address_update import ArtificialAddressInfoUpdateJob
-from saaty.views.job.eta_history_data_update import ETASupplierHistoryUpdateJob,ETATransporterHistoryUpdateJob
+from saaty.views.job.eta_history_data_update import ETASupplierHistoryUpdateJob,ETATransporterHistoryUpdateJob, \
+    ETAPoiStatisticsUpdateJob,ETATransporterPeakUpdateJob
 
 urls = [
     # ADMIN
@@ -34,8 +36,10 @@ urls = [
     ('/v1/eta/accept_to_pickup', EtaAOverHeadView.as_view('eta_a_time_overhead')),
 
     # eta: accept_to_pickup time (total A) overhead
-    ('/v1/eta/accept_to_pickup_batch', EtaABatchOverHeadView.as_view('eta_a_time_batch_overhead'))
+    ('/v1/eta/accept_to_pickup_batch', EtaABatchOverHeadView.as_view('eta_a_time_batch_overhead')),
 
+    # eta: delivery time (C) overhead
+    ('/v1/eta/delivery', EtaCOverHeadView.as_view('eta_c_time_overhead')),
 
 ]
 
@@ -70,4 +74,12 @@ urls.extend([
     # ETA: update transporter history info
     ('/job/update_transporter_history_data', ETATransporterHistoryUpdateJob
      .as_view('job_update_eta_transporter_history_data')),
+
+    # ETA: poi statistics info
+    ('/job/update_poi_statistics_data', ETAPoiStatisticsUpdateJob
+     .as_view('job_update_eta_poi_statistics_data')),
+
+    # ETA: transporter peak info
+    ('/job/update_transporter_peak_data', ETATransporterPeakUpdateJob
+     .as_view('job_update_eta_transporter_peak_data')),
 ])

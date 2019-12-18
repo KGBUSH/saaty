@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
-
+import datetime
 import json
 import pandas as pd
 import time
 from flask import request
 from core import sentry, app
+from core import kafkaBizLogger
+from core import algoKafkaLogger
 from common.framework.views import JsonView
+from saaty.constants import kafka_event
 from saaty.services.eta_service import get_eta_a_overhead_v2
 from saaty.services.eta_service import get_eta_a_batch_overhead
 
@@ -26,6 +29,7 @@ class EtaAOverHeadView(JsonView):
     }
 
     def post(self, **kwargs):
+        start_time = time.time()
         try:
             data = json.loads(request.data)
             transporter_id = int(data['transporterId'])
@@ -38,7 +42,7 @@ class EtaAOverHeadView(JsonView):
             city_id = int(data['cityId'])
             cargo_type_id = int(data['cargoTypeID'])
             cargo_weight = float(data['cargoWeight'])
-        except Exception:
+        except (KeyError, TypeError, ValueError):
             sentry.captureException()
             self.update_errors(self.error_messages['args_error'])
             return self.render_to_response()
@@ -55,6 +59,30 @@ class EtaAOverHeadView(JsonView):
             'arriveToFetchSeconds': pred_a2
         }
 
+        end_time = time.time()
+        info = {
+            "transporter_id": transporter_id,
+            "transporter_lat": transporter_lat,
+            "transporter_lng": transporter_lng,
+            "supplier_id": supplier_id,
+            "supplier_lat": supplier_lat,
+            "supplier_lng": supplier_lng,
+            "weekday": weekday,
+            "timestamp": timestamp,
+            "hour": hour,
+            "cargo_type_id": cargo_type_id,
+            "cargo_weight": cargo_weight,
+
+            "now_timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "time_used": round(end_time - start_time, 3),
+            "city_id": city_id,
+
+            "status": status,
+            "pred_a1": pred_a1,
+            "pred_a2": pred_a2,
+        }
+        algoKafkaLogger.info(kafka_event.ETA_ACCEPT_TO_ARRIVE_TOFETCH_EVENT, info)
+
         return self.render_to_response(context)
 
 
@@ -68,6 +96,7 @@ class EtaABatchOverHeadView(JsonView):
     }
 
     def post(self, **kwargs):
+        start_time = time.time()
         data_list = []
         try:
             data = json.loads(request.data)
@@ -93,6 +122,7 @@ class EtaABatchOverHeadView(JsonView):
                                       'supplier_id': supplier_id,
                                       'supplier_lat': supplier_lat,
                                       'supplier_lng': supplier_lng,
+                                      'timestamp': timestamp,
                                       'hour': hour,
                                       'city_id': city_id,
                                       'weekday': weekday,

@@ -106,12 +106,15 @@ def cn2dig(matched):
 
 
 class BuildingRecognizer(object):
-    def __init__(self):
-        self.PATTERN_RECOGNIZE_BASEMENT = re.compile(ur'-\d楼|-\d层|-\d[fF]')
-        self.PATTERN_RECOGNIZE = re.compile(ur'\d+楼|\d{3,4}$|\d{3,4} |\d{3,4}室|\d{3,4}房|\d+层|\d+[fF]')
-        self.REPLACE_RECOGNIZE = re.compile(ur'楼|室|层|房|[A-Za-z]| ')
-        self.CHINESE_NUM_RECOGNIZE = re.compile(ur'[一二三四五六七八九十]+')
-        self.MINUS_NUM_RECOGNIZE = re.compile(ur'[Bb负]')
+
+    PATTERN_RECOGNIZE_BASEMENT = re.compile(ur'-\d楼|-\d层|-\d[fF]')
+    PATTERN_RECOGNIZE = re.compile(ur'\d+楼|\d{3,4}$|\d{3,4} |\d{3,4}室|\d{3,4}房|\d+层|\d+[fF]')
+    REPLACE_RECOGNIZE = re.compile(ur'楼|室|层|房|[A-Za-z]| ')
+    CHINESE_NUM_RECOGNIZE = re.compile(ur'[一二三四五六七八九十]+')
+    MINUS_NUM_RECOGNIZE = re.compile(ur'[Bb负]')
+
+    PATTERN_RECOGNIZE_BUILDING = re.compile(ur'\d+号楼|\d+栋|\d+幢')
+    REPLACE_RECOGNIZE_BUILDING = re.compile(ur'号楼|栋|幢')
 
     def get_building_floor(self, address):
         # 将汉语的数字转换成阿拉伯数字
@@ -128,6 +131,27 @@ class BuildingRecognizer(object):
                 return int(floor)
         else:
             return 0
+
+    def get_building_num(self, address):
+        """获取楼号"""
+        address = self.CHINESE_NUM_RECOGNIZE.sub(cn2dig, address)
+        address = self.MINUS_NUM_RECOGNIZE.sub('-', address)
+        building = self.PATTERN_RECOGNIZE_BUILDING.findall(address)
+        result_building = -999
+        if building:
+            result_building = self.REPLACE_RECOGNIZE_BUILDING.sub("", building[0])
+            result_building = int(result_building)
+        return result_building
+
+
+
+class ETABuildingRecognizer(BuildingRecognizer):
+    """
+    加了几号楼提取
+    """
+    PATTERN_RECOGNIZE = re.compile(ur'\d+楼|\d{3,4}$|\d{3,4} |\d{3,4}室|\d{3,4}房|\d+层|\d+[A-Za-z]')
+
+
 
 
 if __name__ == '__main__':

@@ -28,4 +28,10 @@ tasks = [
     # job_update_transporter_history_data
     eta_history_data_update_task.update_transporter_history_data,
 
+    # job_update_poi_statistics_data
+    eta_history_data_update_task.update_poi_statistics_data,
+
+    # job_update_transporter_peak_data
+    eta_history_data_update_task.update_transporter_peak_data
+
 ]
