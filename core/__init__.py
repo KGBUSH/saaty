@@ -10,8 +10,9 @@ from raven.contrib.flask import Sentry
 from common.db.router import AutoRouteSQLAlchemy
 from common.mq.kafka_logger import BizkafkaLogger
 from common.mq.kafka_logger import FreeKafkaLogger
-from common.mq.routing_client import RoutingConsumer
-from common.mq.routing_client import RoutingProducer
+from common.mq.rabbitmq_config import PropertiesBuilder
+from common.mq.rabbit_integrate import integrate_producer
+from common.mq.rabbit_integrate import integrate_consumer
 from common.config.cfgservice import Cfgservice
 from common.cache.dadacache import DadaCache
 from common.dadadata import data_def
@@ -85,22 +86,24 @@ db = AutoRouteSQLAlchemy(app)
 
 
 # mq client
-mq_consumer = RoutingConsumer(
+mq_daemon_thread, mq_consumer = integrate_consumer(
     app=app,
-    brokers_key='SAATY_ROUTING_CONSUMER_BROKERS',
-    discovery_service=discovery_service,
-    cfg_service=config_service,
-    system_name=config.APP_NAME,
+    discovery_service=discovery_service.client,
+    config_service=config_service,
+    properties_builder=PropertiesBuilder(
+        consumer_vhosts_key='saaty_routing_consumer_brokers',
+    ),
 )
 
-mq_producer = RoutingProducer(
+mq_route_change_thread, mq_producer = integrate_producer(
     app=app,
-    brokers_key='SAATY_ROUTING_PRODUCER_BROKERS',
-    discovery_service=discovery_service,
-    cfg_service=config_service,
-    system_name=config.APP_NAME,
+    discovery_service=discovery_service.client,
+    config_service=config_service,
+    properties_builder=PropertiesBuilder(
+        producer_vhosts_key='saaty_routing_producer_brokers',
+    ),
 )
-mq_producer.start()
+mq_route_change_thread.start()
 
 
 # redis & cache

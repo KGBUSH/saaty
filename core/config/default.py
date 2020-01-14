@@ -94,6 +94,52 @@ DADA_DATA_CLIENT_STRATEGY = [
     },
 ]
 
+LOCAL_MQ_CFG = {
+    'RABBIT_MQ_TASK_INTERVAL': 1000,
+    'saaty_routing_consumer_brokers': {
+        'dc1': {
+            'base': {
+                'rabbit-saaty': {
+                    'cluster_list': ['cluster1'],
+                    'vhost': '%2Fsaaty',
+                    'auth': 'admin:Pass1234'
+                },
+                'default': {
+                    'cluster_list': ['cluster1'],
+                    'vhost': '%2Fsaaty',
+                    'auth': 'admin:Pass1234'
+                }
+            }
+        }
+    },
+    'saaty_routing_producer_brokers': {
+        'dc1': {
+            'base': {
+                'rabbit-saaty': {
+                    'cluster_list': ['cluster1'],
+                    'vhost': '%2Fsaaty',
+                    'auth': 'admin:Pass1234'
+                },
+                'default': {
+                    'cluster_list': ['cluster1'],
+                    'vhost': '%2Fsaaty',
+                    'auth': 'admin:Pass1234'
+                }
+            }
+        }
+    },
+    'max.link.per.cluster': '1',
+    'max.republished.count': '5',
+    'message.queue.cluster.pool': {
+        'cluster1': ['10.9.45.106:5672']
+    },
+    'msg.isolation.route.name': 'jd_cloud',
+    'msg.queue.consumer.key.binds': {},
+    'msg.queue.producer.key.binds': {},
+    'only.record.err.log': 'true',
+    'publish.need.ack': 'true'
+}
+
 SENTRY_DSN = ''
 
 ZK_HOSTS = '10.9.82.249:2181'
