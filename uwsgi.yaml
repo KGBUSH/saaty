@@ -1,0 +1,20 @@
+uwsgi:
+    pythonpath: /data/apps
+    module: runserver
+    callable: app
+    socket: /home/app/run/app.sock
+    pidfile: /home/app/run/app.pid
+    master: true
+    processes: 8
+    threads: 2
+    harakiri: 10
+    enable-threads: true
+    lazy-apps: true
+    harakiri-verbose: true
+    py-tracebacker: /home/app/run/app.sock
+    buffer-size: 8192
+    vacuum: true
+    chmod-socket: 666
+    die-on-term: true
+    log-master: true
+    logto: /data/logs/uwsgi/app/uwsgi.log
