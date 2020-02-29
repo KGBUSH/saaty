@@ -1,0 +1,15 @@
+FROM registry.corp.imdada.cn:5000/env/python-uwsgi-nginx:2.7.15
+
+WORKDIR /data/apps
+
+COPY ./requirements.txt /requirements.txt
+
+RUN pip install -r /requirements.txt
+
+COPY ./ /data/apps
+
+EXPOSE 80
+
+ENTRYPOINT ["/usr/bin/dumb-init", "-v", "--rewrite", "15:2", "--", "/docker-entrypoint.sh"]
+
+CMD ["/usr/local/bin/uwsgi", "--module=runjobworker", "--callable=app", "--master", "--processes=8", "--threads=2", "--enable-threads", "--harakiri=10", "--harakiri-verbose", "--lazy-apps", "--post-buffering=8192", "--buffer-size=32768", "--pidfile=/home/app/run/app.pid", "--vacuum", "--socket=/home/app/run/app.sock", "--chmod-socket=664", "--py-tracebacker=/home/app/run/app.sock", "--die-on-term", "--no-orphans", "--log-master", "--logto=/data/logs/uwsgi/app/uwsgi.log", "--pythonpath=/data/apps"]
