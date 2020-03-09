@@ -33,11 +33,12 @@ PROJECT_PATH = app.config['PROJECT_PATH']
 ETA A 段 （接单到到店，到店到取货）
 """
 # 针对接单到到店这段时间的模型
-model_eta_a1 = load_object(PROJECT_PATH + "/saaty/resource_data/eta/a/from157_tree80/lgb_m1_from157_tree80.pkl")
+model_dir = "/saaty/resource_data/eta/a/from157_0201to0303_at0309/"
+model_eta_a1 = load_object(PROJECT_PATH + model_dir + "lgb_m1.pkl")
 # 针对到店到取货这段时间的模型
-model_eta_a2 = load_object(PROJECT_PATH + "/saaty/resource_data/eta/a/from157_tree80/lgb_m2_from157_tree80.pkl")
+model_eta_a2 = load_object(PROJECT_PATH + model_dir + "lgb_m2.pkl")
 # 上述两个模型的feature是共用的，one_hot_columns代表one-hot之后的总feature，保存的是x_train.columns（pandas）
-one_hot_columns_A = load_object(PROJECT_PATH + "/saaty/resource_data/eta/a/from157_tree80/A_params_after_onehot.pkl")
+one_hot_columns_A = load_object(PROJECT_PATH + model_dir + "A_params_after_onehot.pkl")
 
 # 需要做one-hot的feature (不一定都在当前版本的特征里)
 category = [
@@ -195,14 +196,19 @@ def get_eta_a_overhead_v2(transporter_id, transporter_lat, transporter_lng,
     # 4.1 preprocess
     x_test = preprocess_for_A_inference(data_dict=result)
     # 4.2 predict
-    if x_test is not None:
-        status = 1
-        y_predict_a1 = model_eta_a1.predict(x_test)  # 预测 达达接单到到店的时间
-        y_predict_a2 = model_eta_a2.predict(x_test)  # 预测 达达到店到取货的等待时间
-        y_predict_a1 = np.expm1(y_predict_a1)  # 偏态校正
-        y_predict_a2 = np.expm1(y_predict_a2)
-        return [status, y_predict_a1[0], y_predict_a2[0]]
-    else:
+    try:
+        if x_test is not None:
+            y_predict_a1 = model_eta_a1.predict(x_test)  # 预测 达达接单到到店的时间
+            y_predict_a2 = model_eta_a2.predict(x_test)  # 预测 达达到店到取货的等待时间
+            y_predict_a1 = np.expm1(y_predict_a1)  # 偏态校正
+            y_predict_a2 = np.expm1(y_predict_a2)
+            status = 1
+            return [status, y_predict_a1[0], y_predict_a2[0]]
+        else:
+            # 返回老算法
+            return [status, distance_line_dada_to_supplier * 1.36 / dada_speed, pickup_time]
+    except:
+        sentry.captureException()
         # 返回老算法
         return [status, distance_line_dada_to_supplier * 1.36 / dada_speed, pickup_time]
 
@@ -217,6 +223,8 @@ def preprocess_for_A_inference(data_dict):
         for raw_col in A_v2_features:
             if raw_col in category:
                 cal_after = raw_col + '_' + str(data_dict[raw_col])
+                if cal_after not in one_hot_columns_A.values:
+                    return None
                 x.loc[0, cal_after] = 1
             else:
                 # 数值特征
@@ -361,19 +369,23 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
     # 4.1 preprocess
     x_test = preprocess_for_C_inference(data_dict=result)
     # 4.2 predict
-    if x_test is not None:
-        status = 1
-        y_predict_a1 = model_eta_c.predict(x_test)  # 预测 达达接单到到店的时间
-        y_predict_a1 = np.expm1(y_predict_a1)  # 偏态校正
-        return [status, y_predict_a1[0]]
-    else:
-        # 返回老算法
+    try:
+        if x_test is not None:
+            y_predict_a1 = model_eta_c.predict(x_test)  # 预测 达达接单到到店的时间
+            y_predict_a1 = np.expm1(y_predict_a1)  # 偏态校正
+            status = 1
+            return [status, y_predict_a1[0]]
+        else:
+            # 返回老算法
+            return [status, delivery_time]
+    except:
+        sentry.captureException()
         return [status, delivery_time]
 
 
 def preprocess_for_C_inference(data_dict):
     """
-    eta accept到pickup（A段） inference之前的预处理
+    eta 交付阶段（A段） inference之前的预处理
     """
     # 特征对齐
     try:
@@ -381,6 +393,8 @@ def preprocess_for_C_inference(data_dict):
         for raw_col in C_features:
             if raw_col in category:
                 cal_after = raw_col + '_' + str(data_dict[raw_col])
+                if cal_after not in one_hot_columns_C.values:
+                    return None
                 x.loc[0, cal_after] = 1
             else:
                 # 数值特征
