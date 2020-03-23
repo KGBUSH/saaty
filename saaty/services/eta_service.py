@@ -67,58 +67,13 @@ A_v2_features = [
     'city_id'
 ]
 
-
 """
 eta C 段 （交付阶段）
 """
 # C段模型
-model_eta_c = load_object(PROJECT_PATH + "/saaty/resource_data/eta/c/lgb_ETA_C.pkl")
-# one_hot_columns代表one-hot之后的总feature，保存的是x_train.columns（pandas）
-one_hot_columns_C = load_object(PROJECT_PATH + "/saaty/resource_data/eta/c/C_params_after_onehot.pkl")
-# ETA-C 的特征
-C_features = [
-    # cargo 相关
-    'cargo_type_id', 'cargo_weight',
-
-    # receiver 地址相关
-    # 'poi_name_char_num',
-    'receiver_address_char_num',
-    # 'num_bracket',
-    # 'is_have_difficulty', 'is_working',
-    # 'num_building',
-    'num_floor', 'is_floor_over6',
-
-    # 距离相关
-    # 'receiver_poi_distance', 's_r_line_distance',
-
-    # poi
-    'percentile_deliver_time_poi',  # 最重要，振锋的统计指标
-    'avg_delivery_time_poi', 'percentile_distance_poi', 'std_distance_poi', 'std_delivery_time_poi', 'order_cnt',
-    # 'is_hard_poi', 'difficulty',  # 困难poi  暂时不要了
-
-    # 达达相关
-    't_history_order_num', 't_avg_a1_time', 't_avg_a2_time',
-    # 'delivery_cnt', 'avg_delivery_time1', 'avg_delivery_time2', 'percen_delivery_time1', 'percen_delivery_time2',
-    'delivery_cnt',
-    'avg_delivery_time1',
-    'avg_delivery_time2',
-    'per_delivery_time1',
-    'per_delivery_time2',
-    'cnt_peek1',
-    'cnt_peek2',
-    'cnt_peek3',
-    'cnt_peek0',
-    'per_delivery_time1_peek1',
-    'per_delivery_time1_peek2',
-    'per_delivery_time1_peek3',
-    'per_delivery_time1_peek0',
-
-    # 实效相关
-    'hour',
-
-    # 城市
-    'city_id',
-]
+model_eta_c = load_object(PROJECT_PATH + "/saaty/resource_data/eta/c/v2/lgb_model.pkl")
+# one-hot之后的总feature
+feature_extractor_c = load_object(PROJECT_PATH + "/saaty/resource_data/eta/c/v2/lgb_fea_preprocess.pkl")
 
 
 def get_eta_a_batch_overhead(order_list):
@@ -299,20 +254,20 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
     if peak_result is None:
         return [status, delivery_time]
     # 根据hour字段算出当前peak
-    current_cnt_peek = 0
-    current_per_delivery_time_peek = 0
+    current_cnt_peek = -1
+    current_per_delivery_time_peek = -1
     if (11 <= hour < 13) or (18 <= hour < 20):
         current_cnt_peek = peak_result['cnt_peek1']
-        current_per_delivery_time_peek = peak_result['per_delivery_time1_peek1']
+        current_per_delivery_time_peek = peak_result['per_delivery_time_peek1']
     elif (9 <= hour < 11) or (15 <= hour < 17) or (20 <= hour < 22):
         current_cnt_peek = peak_result['cnt_peek2']
-        current_per_delivery_time_peek = peak_result['per_delivery_time1_peek2']
+        current_per_delivery_time_peek = peak_result['per_delivery_time_peek2']
     elif (hour < 9) or (23 <= hour):
         current_cnt_peek = peak_result['cnt_peek3']
-        current_per_delivery_time_peek = peak_result['per_delivery_time1_peek3']
+        current_per_delivery_time_peek = peak_result['per_delivery_time_peek3']
     else:
         current_cnt_peek = peak_result['cnt_peek0']
-        current_per_delivery_time_peek = peak_result['per_delivery_time1_peek0']
+        current_per_delivery_time_peek = peak_result['per_delivery_time_peek0']
     peak_result['current_cnt_peek'] = current_cnt_peek
     peak_result['current_per_delivery_time_peek'] = current_per_delivery_time_peek
 
@@ -324,9 +279,7 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
         return [status, delivery_time]
     if req_poi_result:
         receiver_poi_id = poi_content.get("poi_id", 0)
-        receiver_poi_difficulty_hubble = poi_content.get('poi_difficulty', 0.0)
         prob = poi_content.get('prob', 0.0)
-        poi_name = poi_content.get('poi_name', '')
         poi_lat = poi_content.get('poi_lat', 0.0)
         poi_lng = poi_content.get('poi_lng', 0.0)
     else:
@@ -344,19 +297,12 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
         return [status, delivery_time]
 
     # 2 其他基础字段
-    build = ETABuildingRecognizer()
-    num_floor = build.get_building_floor(unicode(receiver_address))
-    if num_floor == 0:
-        return [status, delivery_time]
-
     other_result = {
-        'cargo_type_id': cargo_type_id,
+        'cargo_type_id': str(cargo_type_id),
         'cargo_weight': cargo_weight,
-        'num_floor': num_floor,
-        'is_floor_over6': 1 if num_floor > 6 else 0,
         'receiver_address_char_num': receiver_address.__len__(),
-        'hour': hour,
-        'city_id': city_id
+        'hour': str(hour),
+        'city_id': str(city_id)
     }
 
     # 3 合并所有字段
@@ -366,44 +312,15 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
     result.update(other_result)
 
     # 4 inference
-    # 4.1 preprocess
-    x_test = preprocess_for_C_inference(data_dict=result)
-    # 4.2 predict
     try:
-        if x_test is not None:
-            y_predict_a1 = model_eta_c.predict(x_test)  # 预测 达达接单到到店的时间
-            y_predict_a1 = np.expm1(y_predict_a1)  # 偏态校正
-            status = 1
-            return [status, y_predict_a1[0]]
-        else:
-            # 返回老算法
-            return [status, delivery_time]
+        x_test = feature_extractor_c["dict_vector"].transform(result)
+        y_predict_c = model_eta_c.predict(x_test)  # 预测 达达接单到到店的时间
+        y_predict_c = np.expm1(y_predict_c)  # 偏态校正
+        status = 1
+        return [status, y_predict_c[0]]
     except:
         sentry.captureException()
         return [status, delivery_time]
-
-
-def preprocess_for_C_inference(data_dict):
-    """
-    eta 交付阶段（A段） inference之前的预处理
-    """
-    # 特征对齐
-    try:
-        x = pd.DataFrame(np.zeros((1, one_hot_columns_C.values.shape[0])), columns=one_hot_columns_C)  # empty
-        for raw_col in C_features:
-            if raw_col in category:
-                cal_after = raw_col + '_' + str(data_dict[raw_col])
-                if cal_after not in one_hot_columns_C.values:
-                    return None
-                x.loc[0, cal_after] = 1
-            else:
-                # 数值特征
-                x.loc[0, raw_col] = data_dict[raw_col]
-        return x
-    except:
-        traceback.print_exc()
-        sentry.captureException()
-        return None
 
 
 @read()
@@ -431,18 +348,18 @@ def get_transporter_peak_info(info_dict):
             "transporter_id": transporter_peek_res.transporter_id,
             "city_id": transporter_peek_res.city_id,
             "delivery_cnt": transporter_peek_res.delivery_cnt,
-            "avg_delivery_time1": transporter_peek_res.avg_delivery_time1,
+            # "avg_delivery_time1": transporter_peek_res.avg_delivery_time1,
             "avg_delivery_time2": transporter_peek_res.avg_delivery_time2,
-            "per_delivery_time1": transporter_peek_res.per_delivery_time1,
+            # "per_delivery_time1": transporter_peek_res.per_delivery_time1,
             "per_delivery_time2": transporter_peek_res.per_delivery_time2,
             "cnt_peek1": transporter_peek_res.cnt_peek1,
             "cnt_peek2": transporter_peek_res.cnt_peek2,
             "cnt_peek3": transporter_peek_res.cnt_peek3,
             "cnt_peek0": transporter_peek_res.cnt_peek0,
-            "per_delivery_time1_peek1": transporter_peek_res.per_delivery_time1_peek1,
-            "per_delivery_time1_peek2": transporter_peek_res.per_delivery_time1_peek2,
-            "per_delivery_time1_peek3": transporter_peek_res.per_delivery_time1_peek3,
-            "per_delivery_time1_peek0": transporter_peek_res.per_delivery_time1_peek0,
+            "per_delivery_time_peek1": transporter_peek_res.per_delivery_time_peek1,
+            "per_delivery_time_peek2": transporter_peek_res.per_delivery_time_peek2,
+            "per_delivery_time_peek3": transporter_peek_res.per_delivery_time_peek3,
+            "per_delivery_time_peek0": transporter_peek_res.per_delivery_time_peek0,
 
             # A段特征
             "t_history_order_num": transporter_res.history_order_num,  # 数据库没有前缀t_
@@ -467,7 +384,7 @@ def get_poi_statistic_info(info_dict):
     if poi_res is not None:
         database_res = {
             # poi特征
-            "percentile_deliver_time_poi": poi_res.percentile_delivery_time_poi,  # 和数据库5.2步骤保持统一命名
+            "percentile_delivery_time_poi": poi_res.percentile_delivery_time_poi,  # 和数据库5.2步骤保持统一命名
             "avg_delivery_time_poi": poi_res.avg_delivery_time_poi,
             "percentile_distance_poi": poi_res.percentile_distance_poi,
             "std_distance_poi": poi_res.std_distance_poi,
