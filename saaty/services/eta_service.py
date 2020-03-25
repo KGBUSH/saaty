@@ -16,7 +16,7 @@ from saaty.models.eta_overhead import ETASupplierInfo
 from saaty.models.eta_overhead import ETATransporterInfo
 from saaty.models.eta_overhead import ETATransporterPeekDeliveryInfo
 from saaty.models.eta_overhead import ETAPoiStatistics
-from saaty.services.rpc_services.hubble_poi_rpc_service import get_poi_id
+from saaty.services.rpc_services.hubble_poi_rpc_service import get_poi_id, get_poi_id_no_difficulty
 from saaty.utils.address_floor import ETABuildingRecognizer
 
 __all__ = [
@@ -273,7 +273,8 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
 
     # 1 查询poi相关信息
     try:
-        req_poi_result, poi_content = get_poi_id(lat=receiver_lat, lng=receiver_lng, address=receiver_address)
+        # req_poi_result, poi_content = get_poi_id(lat=receiver_lat, lng=receiver_lng, address=receiver_address)
+        req_poi_result, poi_content = get_poi_id_no_difficulty(lat=receiver_lat, lng=receiver_lng, address=receiver_address)
     except:
         sentry.captureException()
         return [status, delivery_time]
