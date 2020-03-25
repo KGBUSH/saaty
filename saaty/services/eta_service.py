@@ -291,6 +291,10 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
         'city_id': city_id,
         'poi_lat': poi_lat,
         'poi_lng': poi_lng
+        # 'poi_id': 2691071091552944069,
+        # 'city_id': 1,
+        # 'poi_lat': 31.2281,
+        # 'poi_lng': 121.395
     }
     poi_result = get_poi_statistic_info(info_dict=search)
     if poi_result is None:
@@ -300,7 +304,7 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
     other_result = {
         'cargo_type_id': str(cargo_type_id),
         'cargo_weight': cargo_weight,
-        'receiver_address_char_num': receiver_address.__len__(),
+        # 'receiver_address_char_num': receiver_address.__len__(),
         'hour': str(hour),
         'city_id': str(city_id)
     }
@@ -345,7 +349,7 @@ def get_transporter_peak_info(info_dict):
     if transporter_peek_res is not None and transporter_res is not None:
         database_res = {
             # 高峰低谷特征
-            "transporter_id": transporter_peek_res.transporter_id,
+            # "transporter_id": transporter_peek_res.transporter_id,
             "city_id": transporter_peek_res.city_id,
             "delivery_cnt": transporter_peek_res.delivery_cnt,
             # "avg_delivery_time1": transporter_peek_res.avg_delivery_time1,
