@@ -274,7 +274,7 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
     # 1 查询poi相关信息
     try:
         # req_poi_result, poi_content = get_poi_id(lat=receiver_lat, lng=receiver_lng, address=receiver_address)
-        req_poi_result, poi_content = get_poi_id_no_difficulty(lat=receiver_lat, lng=receiver_lng, address=receiver_address)
+        req_poi_result, poi_content = get_poi_id_no_difficulty(lat=receiver_lat, lng=receiver_lng)
     except:
         sentry.captureException()
         return [status, delivery_time]
@@ -293,6 +293,7 @@ def get_eta_c_overhead(transporter_id, receiver_address, receiver_lat, receiver_
         'poi_lat': poi_lat,
         'poi_lng': poi_lng
         # 'poi_id': 2691071091552944069,
+        # 'poi_id': 4504135676450865109,
         # 'city_id': 1,
         # 'poi_lat': 31.2281,
         # 'poi_lng': 121.395

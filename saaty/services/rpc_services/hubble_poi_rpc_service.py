@@ -46,7 +46,7 @@ def get_poi_id(lat, lng, address):
     return send_result, content
 
 
-def get_poi_id_no_difficulty(lat, lng, address):
+def get_poi_id_no_difficulty(lat, lng, address=None):
     """
     订单详情单个查询
     http://confluence.corp.imdada.cn/pages/viewpage.action?pageId=18588534
