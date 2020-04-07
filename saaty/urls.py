@@ -6,7 +6,7 @@ from saaty.views.v1.dynamic_pickup_arrive_latency import DynamicPickupArriveLate
 from saaty.views.v1.pickup_time_overhead import PickupTimeOverHeadView
 from saaty.views.v1.receiver_time_overhead import ReceiverTimeOverHeadView
 from saaty.views.v1.eta_A_overhead import EtaAOverHeadView, EtaABatchOverHeadView
-from saaty.views.v1.eta_C_overhead import EtaCOverHeadView
+from saaty.views.v1.eta_C_overhead import EtaCOverHeadView, EtaCBatchOverHeadView
 from saaty.views.job.poi_time_difficulty_update import \
     POITimeSupplierDifficultyUpdateJob, POITimeReceiverDifficultyUpdateJob
 from saaty.views.job.poi_time_cost_update import \
@@ -35,12 +35,14 @@ urls = [
     # eta: accept_to_pickup time (total A) overhead
     ('/v1/eta/accept_to_pickup', EtaAOverHeadView.as_view('eta_a_time_overhead')),
 
-    # eta: accept_to_pickup time (total A) overhead
+    # eta: accept_to_pickup time (total A) overhead batch
     ('/v1/eta/accept_to_pickup_batch', EtaABatchOverHeadView.as_view('eta_a_time_batch_overhead')),
 
     # eta: delivery time (C) overhead
     ('/v1/eta/delivery', EtaCOverHeadView.as_view('eta_c_time_overhead')),
 
+    # eta: delivery time (C) overhead batch
+    ('/v1/eta/delivery_batch', EtaCBatchOverHeadView.as_view('eta_c_time_overhead_batch')),
 ]
 
 # JOBS
