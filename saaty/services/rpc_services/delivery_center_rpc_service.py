@@ -3,7 +3,7 @@
 from core import app
 from core import service_facade
 from core.config.service_repos import SERVICE_RPC_DELIVERY_CENTER
-from core.config.service_repos import ORDER_DETAIL_SINGLE, ORDER_DETAIL_BATCH
+from core.config.service_repos import ORDER_DETAIL_SINGLE, ORDER_DETAIL_BATCH, ORDER_DETAIL_BATCH_ETA
 import json
 import math
 
@@ -63,6 +63,42 @@ def get_order_detail_batch(order_id_list):
             rs = service_facade.post(
                 category=SERVICE_RPC_DELIVERY_CENTER,
                 service_name=ORDER_DETAIL_BATCH,
+                data=json.dumps(params),
+                headers={'Content-Type': 'application/json', },
+                timeout=_get_delivery_center_timeout(),
+            )
+        except Exception, e:
+            rs = {}
+
+        order_info_list = order_info_list + rs.get('content', [])
+
+    # 如果存在某个订单查不到订单详细信息则报错
+    if len(order_id_list) != len(order_info_list):
+        available_order_id_list = [order_info['id'] for order_info in order_info_list]
+        remain_order_id_list = list(set(order_id_list).difference(set(available_order_id_list)))
+        # send_error_log("can not get some order detail", remain_order_id_list)
+
+    return order_info_list
+
+
+def get_order_detail_for_eta_batch(order_id_list):
+    """
+    订单详情批量查询，对于ETA目前只返回 id','cargoType','receiverAddress','cargoWeight'
+    接口文档见 http://confluence.corp.imdada.cn/pages/viewpage.action?pageId=19267730
+             http://confluence.corp.imdada.cn/pages/viewpage.action?pageId=19268393
+    """
+    order_info_list = []
+    order_group_num = int(math.ceil(float(len(order_id_list)) / 50))
+
+    for i in range(order_group_num):
+        order_ids = order_id_list[i * 50:(i + 1) * 50]
+        params = {'order_ids': order_ids,
+                  'scene_id': 11,
+                  'request_from': 'saaty'}
+        try:
+            rs = service_facade.post(
+                category=SERVICE_RPC_DELIVERY_CENTER,
+                service_name=ORDER_DETAIL_BATCH_ETA,
                 data=json.dumps(params),
                 headers={'Content-Type': 'application/json', },
                 timeout=_get_delivery_center_timeout(),

@@ -7,6 +7,7 @@ SERVICE_RPC_HUBBLE_POI = 'hubble'  # hubble-poi
 # service
 ORDER_DETAIL_SINGLE = 'order.detail.single'
 ORDER_DETAIL_BATCH = 'order.detail.batch'
+ORDER_DETAIL_BATCH_ETA = 'order.detail.batch.eta'
 LNG_LAT_POI_ID = 'latlng.poi.id'
 ADDRESS_POI_ID = 'address.poi.id'
 ADDRESS_POI_ID_NO_DIFFICULTY = 'address.poi.id.no.difficulty'
@@ -16,7 +17,8 @@ ADDRESS_POI_ID_NO_DIFFICULTY = 'address.poi.id.no.difficulty'
 SERVICE_REGISTRY_REPO = {
     SERVICE_RPC_DELIVERY_CENTER: {
         ORDER_DETAIL_SINGLE: '/order/detail/id',
-        ORDER_DETAIL_BATCH: '/order/detail/ids'
+        ORDER_DETAIL_BATCH: '/order/detail/ids',
+        ORDER_DETAIL_BATCH_ETA: '/order/detail/batch/query'
     },
     SERVICE_RPC_HUBBLE_POI : {
         LNG_LAT_POI_ID: '/v1/poi/get-info-by-latlng',

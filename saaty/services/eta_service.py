@@ -7,6 +7,7 @@ from saaty.utils.map_utils import get_distance_meter
 import traceback
 import numpy as np
 import pandas as pd
+import time
 
 from common.db import read
 from core import db
@@ -18,6 +19,13 @@ from saaty.models.eta_overhead import ETATransporterPeekDeliveryInfo
 from saaty.models.eta_overhead import ETAPoiStatistics
 from saaty.services.rpc_services.hubble_poi_rpc_service import get_poi_id, get_poi_id_no_difficulty, get_poi_id_no_difficulty_batch
 from saaty.utils.address_floor import ETABuildingRecognizer
+from saaty.utils import abtest
+from saaty.services.poi_time_value_service import \
+    get_pickup_time_overhead_value_list
+from saaty.services.poi_time_value_service import \
+    get_receiver_time_overhead_value_list
+from saaty.services.rpc_services.delivery_center_rpc_service import \
+    get_order_detail_batch, get_order_detail_for_eta_batch
 
 __all__ = [
     'get_eta_a_overhead_v2',
@@ -26,6 +34,8 @@ __all__ = [
     'get_eta_c_overhead',
     'get_eta_c_overhead_v2_batch'
 ]
+
+BLANK_ABTEST_ID = 'blank'
 
 PROJECT_PATH = app.config['PROJECT_PATH']
 
@@ -774,3 +784,229 @@ def get_transporter_peak_info_batch(info_list):
         database_res_list.append(database_res)
 
     return database_res_list
+
+
+def get_recommend_abtest_id(recommend_id):
+    """
+    根据待派订单，获取AB测试分组ID
+    """
+    eta_abtest_group_config = app.config.get('ETA_ABTEST_GROUP_CONFIG', {'blank': 50, 'v1_new_eta': 50})
+    default_abtest_id = BLANK_ABTEST_ID
+
+    abtest_id = abtest.get_abtest_id(
+        map_id=recommend_id,
+        exp_conf=eta_abtest_group_config,
+        test_name='eta',
+        default=default_abtest_id,
+    )
+    return abtest_id
+
+
+def eta_pickup_cut_abtest(test_id_list, param_data_dict_list):
+    """
+    ETA A 段
+    分流
+    :param test_id_list:
+    :param param_data_dict_list: 入参，list-dict类型
+                                      dict: 包含order_id和对应的待派订单
+    :return: 两个分流的结果list
+    """
+    abtest_blank_req_list = []
+    abtest_experiment_req_list = []
+    res_blank_pickup_time_list = []
+    res_experiment_pickup_time_list = []
+
+    # 1. 分流
+    for test_id, param_dict in zip(test_id_list, param_data_dict_list):
+        if test_id == BLANK_ABTEST_ID:
+            abtest_blank_req_list.append(param_dict)
+
+        elif test_id.startswith('v1'):
+            abtest_experiment_req_list.append(param_dict)
+        else:
+            raise RuntimeError()
+
+    # 2. 对照组
+    if abtest_blank_req_list:
+        res_blank_pickup_time_list = get_pickup_time_overhead_value_list(req_list=abtest_blank_req_list)
+
+    # 3. 实验组
+    if abtest_experiment_req_list:
+        res_experiment_pickup_time_list = eta_pickup_experiment_flow(order_fastmorse_param_list=abtest_experiment_req_list)
+    return abtest_blank_req_list, abtest_experiment_req_list, res_blank_pickup_time_list, res_experiment_pickup_time_list
+
+
+def eta_receive_cut_abtest(test_id_list, param_data_dict_list):
+    """
+    ETA C 段
+    分流
+    :param test_id_list:
+    :param param_data_dict_list: 入参，list-dict类型
+                                      dict: 包含order_id和对应的待派订单
+    :return: 两个分流的结果list
+    """
+    abtest_blank_req_list = []
+    abtest_experiment_req_list = []
+    res_blank_receive_time_list = []
+    res_experiment_receive_time_list = []
+
+    # 1. 分流
+    for test_id, param_dict in zip(test_id_list, param_data_dict_list):
+        if test_id == BLANK_ABTEST_ID:
+            abtest_blank_req_list.append(param_dict)
+
+        elif test_id.startswith('v1'):
+            abtest_experiment_req_list.append(param_dict)
+        else:
+            raise RuntimeError()
+
+    # 2. 对照组
+    if abtest_blank_req_list:
+        res_blank_receive_time_list = get_receiver_time_overhead_value_list(req_list=abtest_blank_req_list)
+
+    # 3. 实验组
+    if abtest_experiment_req_list:
+        res_experiment_receive_time_list = eta_receiver_experiment_flow(order_fastmorse_param_list=abtest_experiment_req_list)
+    return abtest_blank_req_list, abtest_experiment_req_list, res_blank_receive_time_list, res_experiment_receive_time_list
+
+
+def eta_pickup_experiment_flow(order_fastmorse_param_list):
+    """
+    实验组分流，从feature service获取必要参数
+
+    实验组的入参：search_list: list[dict, dict, ……]
+                          transporter_id, transporter_lat, transporter_lng,
+                          supplier_id, supplier_lat, supplier_lng,
+                          hour, city_id, weekday,
+                          cargo_type_id, cargo_weight
+    新算法需要的参数：
+                        'order_id': order_id,
+                        'transporter_id': transporter_id,
+                        'transporter_lat': transporter_lat,
+                        'transporter_lng': transporter_lng,
+                        'supplier_id': supplier_id,
+                        'supplier_lat': supplier_lat,
+                        'supplier_lng': supplier_lng,
+                        'hour': hour,
+                        'city_id': city_id,
+                        'weekday': weekday,
+                        'cargo_type_id': cargo_type_id,
+                        'cargo_weight': cargo_weight
+    :param order_fastmorse_param_list: 上游fastmorse给的order入参，只有一些基本的字段
+    :return:
+    """
+    # 1. 从别的借口获取order粒度的其他特征（e.g. cargoType）
+    order_id_list = [item['orderId'] for item in order_fastmorse_param_list]
+
+    order_info_list = get_order_detail_for_eta_batch(order_id_list=order_id_list)
+    order_info_obj_dict = {
+        order_info['id']: order_info for order_info in order_info_list
+    }
+    order_extra_res_list = [
+        order_info_obj_dict.get(order_id, None) for order_id in order_id_list
+    ]
+
+    # 2. 和上游给的order拼接起来
+    order_all_param_list = []  # 汇总所有new ETA需要的参数
+    timestamp = time.time()
+    for extra_res, fast_order_param in zip(order_extra_res_list, order_fastmorse_param_list):
+        hour = pd.Timestamp(timestamp, unit='s', tz='Asia/Shanghai').hour
+        weekday = pd.Timestamp(timestamp, unit='s', tz='Asia/Shanghai').dayofweek
+
+        new_param = {
+            'transporter_id': fast_order_param.get('transporterId', -1),
+            'transporter_lat': fast_order_param.get('transporterLat', -1),
+            'transporter_lng': fast_order_param.get('transporterLng', -1),
+            'supplier_id': fast_order_param.get('supplierLd', -1),
+            'supplier_lat': fast_order_param.get('supplierLat', -1),
+            'supplier_lng': fast_order_param.get('supplierLng', -1),
+            'city_id': fast_order_param.get('cityId', -1),
+
+            'hour': hour,
+            'weekday': weekday,
+
+            'cargo_type_id': extra_res.get('cargoType', 0) if isinstance(extra_res, dict) else 0,
+            'cargo_weight': extra_res.get('cargoWeight', 0) if isinstance(extra_res, dict) else 0
+        }
+        order_all_param_list.append(new_param)
+    res_eta_list = get_eta_a_overhead_v2_batch(search_list=order_all_param_list)
+
+    return res_eta_list
+
+
+def eta_receiver_experiment_flow(order_fastmorse_param_list):
+    """
+    实验组分流，从feature service获取必要参数
+
+    实验组的入参：search_list: list[dict, dict, ……]
+                          transporter_id, transporter_lat, transporter_lng,
+                          supplier_id, supplier_lat, supplier_lng,
+                          hour, city_id, weekday,
+                          cargo_type_id, cargo_weight
+    新算法需要的参数：
+                        'order_id': order_id,
+                        'transporter_id': transporter_id,
+                        'transporter_lat': transporter_lat,
+                        'transporter_lng': transporter_lng,
+                        'supplier_id': supplier_id,
+                        'supplier_lat': supplier_lat,
+                        'supplier_lng': supplier_lng,
+                        'hour': hour,
+                        'city_id': city_id,
+                        'weekday': weekday,
+                        'cargo_type_id': cargo_type_id,
+                        'cargo_weight': cargo_weight
+    :param order_fastmorse_param_list: 上游fastmorse给的order入参，只有一些基本的字段
+    :return:
+    """
+    # 1. 从别的借口获取order粒度的其他特征（e.g. cargoType）
+    order_id_list = [item['orderId'] for item in order_fastmorse_param_list]
+
+    order_info_list = get_order_detail_for_eta_batch(order_id_list=order_id_list)
+    order_info_obj_dict = {
+        order_info['id']: order_info for order_info in order_info_list
+    }
+    order_extra_res_list = [
+        order_info_obj_dict.get(order_id, None) for order_id in order_id_list
+    ]
+
+    # 2. 和上游给的order拼接起来
+    order_all_param_list = []  # 汇总所有new ETA需要的参数
+    timestamp = time.time()
+    for extra_res, fast_order_param in zip(order_extra_res_list, order_fastmorse_param_list):
+        hour = pd.Timestamp(timestamp, unit='s', tz='Asia/Shanghai').hour
+        weekday = pd.Timestamp(timestamp, unit='s', tz='Asia/Shanghai').dayofweek
+
+        new_param = {
+            'transporter_id': fast_order_param.get('transporterId', -1),
+            'receiver_lat': fast_order_param.get('receiverLat', 0),
+            'receiver_lng': fast_order_param.get('receiverLng', 0),
+            'city_id': fast_order_param.get('cityId', -1),
+
+            'hour': hour,
+            'weekday': weekday,
+
+            'cargo_type_id': extra_res.get('cargoType', 0) if isinstance(extra_res, dict) else 0,
+            'cargo_weight': extra_res.get('cargoWeight', 0) if isinstance(extra_res, dict) else 0,
+            'receiver_address': extra_res.get('receiverAddress', -1) if isinstance(extra_res, dict) else 0
+        }
+        order_all_param_list.append(new_param)
+    res_eta_list = get_eta_c_overhead_v2_batch(search_list=order_all_param_list)
+
+    return res_eta_list
+
+
+def is_new_eta_call(param_list_dict, flag='recOrderId'):
+    """
+    判断是否是fastmores的新参数调用
+    """
+    default = -999
+    if len(param_list_dict) <= 0:
+        return False
+
+    # 1. 拿出batch的第一个
+    param = param_list_dict[0]
+    recom_order_id = param.get(flag, default)
+    if recom_order_id == default:
+        return False
+    return True
