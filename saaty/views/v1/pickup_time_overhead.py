@@ -85,8 +85,8 @@ class PickupTimeOverHeadView(JsonFormView):
                     })
                     info.update(expe_req)
                     info.update({
-                        'isDowngrade': 0 if res_expe_info[0] != -1 else 1,  # 新算法的状态标志1说明没有降级, -1 说明新算法降级
-                        'pickupTimeValue': res_expe_info[2],
+                        'isDowngrade': 0 if res_expe_info[0] != -1 else 1,  # 新算法的状态标志1说明没有降级, -1 说明新算法降级；isDowngrade==0: 没有降级
+                        'pickupTimeValue': res_expe_info[2],  # 只要取货时间；a1不返回了
                         'pickupTimeRank': -999
                     })
                     algoKafkaLogger.info(kafka_event.ETA_ACCEPT_TO_ARRIVE_TOFETCH_EVENT, info)
@@ -96,8 +96,6 @@ class PickupTimeOverHeadView(JsonFormView):
                 algoKafkaLogger.info(kafka_event.ETA_DELIVERY_EVENT, info)
                 # self.update_errors(self.error_messages['args_error'])
                 # return self.render_to_response()
-
-
 
         # 4. 老算法返回全量结果
         res_pickup_time_list = []

@@ -262,7 +262,7 @@ def get_eta_a_overhead_v2_batch(search_list):
             all_result_list[valid_id] = new_result
         return all_result_list
     except:
-        sentry.captureException()
+        # sentry.captureException()
         return all_result_list
 
 
@@ -717,7 +717,7 @@ def get_eta_c_overhead_v2_batch(search_list):
             all_result_list[valid_id] = new_result
         return all_result_list
     except:
-        sentry.captureException()
+        # sentry.captureException()
         return all_result_list
 
 
@@ -790,7 +790,7 @@ def get_recommend_abtest_id(recommend_id):
     """
     根据待派订单，获取AB测试分组ID
     """
-    eta_abtest_group_config = app.config.get('ETA_ABTEST_GROUP_CONFIG', {'blank': 50, 'v1_new_eta': 50})
+    eta_abtest_group_config = app.config.get('ETA_ABTEST_GROUP_CONFIG', {BLANK_ABTEST_ID: 0, 'v1_new_eta': 100})
     default_abtest_id = BLANK_ABTEST_ID
 
     abtest_id = abtest.get_abtest_id(
@@ -915,11 +915,11 @@ def eta_pickup_experiment_flow(order_fastmorse_param_list):
 
         new_param = {
             'transporter_id': fast_order_param.get('transporterId', -1),
-            'transporter_lat': fast_order_param.get('transporterLat', -1),
-            'transporter_lng': fast_order_param.get('transporterLng', -1),
-            'supplier_id': fast_order_param.get('supplierLd', -1),
-            'supplier_lat': fast_order_param.get('supplierLat', -1),
-            'supplier_lng': fast_order_param.get('supplierLng', -1),
+            'transporter_lat': fast_order_param.get('transporterLat', 0),
+            'transporter_lng': fast_order_param.get('transporterLng', 0),
+            'supplier_id': fast_order_param.get('supplierId', -1),
+            'supplier_lat': fast_order_param.get('supplierLat', 0),
+            'supplier_lng': fast_order_param.get('supplierLng', 0),
             'city_id': fast_order_param.get('cityId', -1),
 
             'hour': hour,
