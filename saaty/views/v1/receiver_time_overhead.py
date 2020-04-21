@@ -71,7 +71,7 @@ class ReceiverTimeOverHeadView(JsonFormView):
                         'receiverTimeValue': res_blank_info['receiverTimeValue'],
                         'receiverTimeRank': res_blank_info['receiverTimeRank']
                     })
-                    # algoKafkaLogger.info(kafka_event.ETA_DELIVERY_EVENT, info)
+                    algoKafkaLogger.info(kafka_event.ETA_DELIVERY_EVENT, info)
                 # 实验组日志
                 for expe_req, res_expe_info in zip(experiment_req_list, res_experiment_list):
                     info = {}
@@ -87,7 +87,7 @@ class ReceiverTimeOverHeadView(JsonFormView):
                         'receiverTimeValue': res_expe_info[1],
                         'receiverTimeRank': -999
                     })
-                    # algoKafkaLogger.info(kafka_event.ETA_DELIVERY_EVENT, info)
+                    algoKafkaLogger.info(kafka_event.ETA_DELIVERY_EVENT, info)
             except:
                 sentry.captureException()
                 info = {'is_success': 0, 'count': len(receiver_info_list)}

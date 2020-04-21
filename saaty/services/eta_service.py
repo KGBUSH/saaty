@@ -790,7 +790,7 @@ def get_recommend_abtest_id(recommend_id):
     """
     根据待派订单，获取AB测试分组ID
     """
-    eta_abtest_group_config = app.config.get('ETA_ABTEST_GROUP_CONFIG', {BLANK_ABTEST_ID: 0, 'v1_new_eta': 100})
+    eta_abtest_group_config = app.config.get('ETA_ABTEST_GROUP_CONFIG', {BLANK_ABTEST_ID: 50, 'v1_new_eta': 50})
     default_abtest_id = BLANK_ABTEST_ID
 
     abtest_id = abtest.get_abtest_id(
